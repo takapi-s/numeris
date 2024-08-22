@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/stickpuzzle/static/css/main.f855e6bc.css",
+    "main.js": "/stickpuzzle/static/js/main.a1cd0a52.js",
+    "static/js/453.77ab6006.chunk.js": "/stickpuzzle/static/js/453.77ab6006.chunk.js",
+    "static/media/logo.svg": "/stickpuzzle/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "index.html": "/stickpuzzle/index.html",
+    "main.f855e6bc.css.map": "/stickpuzzle/static/css/main.f855e6bc.css.map",
+    "main.a1cd0a52.js.map": "/stickpuzzle/static/js/main.a1cd0a52.js.map",
+    "453.77ab6006.chunk.js.map": "/stickpuzzle/static/js/453.77ab6006.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.a1cd0a52.js"
+  ]
+}
