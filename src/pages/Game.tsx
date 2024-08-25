@@ -1,3 +1,4 @@
+//pages/Game.tsx
 import React from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import useGameLogic from '../hooks/useGameLogic';
@@ -60,7 +61,8 @@ const Game: React.FC = () => {
       </ul>
       <p>Remaining Deck: {deckCount} cards</p>
       <p>Discard Pile: {discardPile.length} cards</p>
-      <p>Time Remaining: {timer} seconds</p>
+      <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
+
     </div>
   );
 };

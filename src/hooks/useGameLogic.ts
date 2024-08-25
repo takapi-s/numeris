@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { database } from '../firebaseConfig';
-import { ref, update, onValue, get } from 'firebase/database';
-import Papa from 'papaparse';
+//hooks/useGameLogic.ts
+import { useEffect, useState } from "react";
+import { database } from "../firebaseConfig";
+import { ref, update, onValue, get } from "firebase/database";
+import Papa from "papaparse";
+import { useNavigate } from "react-router-dom"; // 追加
 
 type Card = {
   color: string;
@@ -39,14 +41,14 @@ const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
               title: row.title,
               playAbility: row.playAbility,
               traitAbility: row.traitAbility,
-              number: row.number
+              number: row.number,
             })) as Ability[];
             resolve(abilities);
           }
         },
         error: (error: Error) => {
           reject(error);
-        }
+        },
       });
     });
   } catch (error) {
@@ -66,7 +68,7 @@ const shuffle = (array: any[]) => {
 
 // デッキ作成関数
 const createDeck = async () => {
-  const colors = ['red', 'yellow', 'blue'];
+  const colors = ["red", "yellow", "blue"];
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const deck: Card[] = [];
 
@@ -79,7 +81,7 @@ const createDeck = async () => {
   }
 
   const _deck = shuffle(deck);
-  const abilities = await loadAbilitiesFromCSV('/decks/NormalDeck.csv');
+  const abilities = await loadAbilitiesFromCSV("/decks/NormalDeck.csv");
 
   let j = 0;
   abilities.forEach((_ability) => {
@@ -98,7 +100,7 @@ const initializeGame = async (roomId: string, owner: string) => {
 
   const snapshot = await get(roomRef);
   if (!snapshot.exists()) {
-    console.error('Room data does not exist.');
+    console.error("Room data does not exist.");
     return;
   }
 
@@ -128,14 +130,17 @@ const initializeGame = async (roomId: string, owner: string) => {
   updates[`rooms/${roomId}/discardPile`] = [];
   updates[`rooms/${roomId}/route`] = shuffledTurnOrder;
   updates[`rooms/${roomId}/currentTurn`] = shuffledTurnOrder[0];
-  updates[`rooms/${roomId}/gameStatus`] = 'initialized';
+  updates[`rooms/${roomId}/gameStatus`] = "initialized";
 
   await update(ref(database), updates);
 };
 
 const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
+  const navigate = useNavigate(); // 追加
   const [hand, setHand] = useState<Card[]>([]);
-  const [opponentHands, setOpponentHands] = useState<Record<string, number>>({});
+  const [opponentHands, setOpponentHands] = useState<Record<string, number>>(
+    {}
+  );
   const [deckCount, setDeckCount] = useState<number>(0);
   const [gameStatus, setGameStatus] = useState<string | null>(null);
   const [route, setRoute] = useState<string[]>([]);
@@ -144,6 +149,14 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const [owner, setOwner] = useState<string | null>(null);
   const [discardPile, setDiscardPile] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
+
+  const checkForDraw = async () => {
+    if (deckCount === 0 && discardPile.length === 0) {
+      await update(ref(database), {
+        [`rooms/${id}/gameStatus`]: "draw",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -177,7 +190,9 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
         const opponentData: Record<string, number> = {};
         route.forEach((player) => {
           if (player !== currentPlayer && data.players[player]) {
-            opponentData[player] = data.players[player].hand ? data.players[player].hand.length : 0;
+            opponentData[player] = data.players[player].hand
+              ? data.players[player].hand.length
+              : 0;
           }
         });
 
@@ -192,25 +207,33 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   useEffect(() => {
     console.log(currentPlayer, owner);
     if (currentPlayer && owner === currentPlayer) {
-        console.log("初期化");
-        initializeGame(id!, owner);
+      //ゲームステータスがinitializedじゃないときにする
+      console.log("初期化");
+      initializeGame(id!, owner);
     }
   }, [currentPlayer, owner, gameStatus, id]);
 
+  //hooks/useGameLogic.ts
   useEffect(() => {
-    if (timer > 0) {
+    if (currentPlayer === currentTurn && timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
-    } else {
-      if (currentPlayer === currentTurn) {
-        drawCard();
-      }
+    } else if (timer === 0 && currentPlayer === currentTurn) {
+      drawCard();
     }
   }, [timer, currentPlayer, currentTurn]);
 
   useEffect(() => {
-    setTimer(20);
+    if (currentPlayer === currentTurn) {
+      setTimer(20);
+    }
   }, [currentTurn]);
+
+  useEffect(() => {
+    if (gameStatus === "draw") {
+      navigate(`/stickpuzzle/room/${id}`); // Room画面に戻る
+    }
+  }, [gameStatus, navigate]);
 
   const playCard = (card: Card) => {
     if (currentPlayer !== currentTurn) {
@@ -218,7 +241,10 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       return;
     }
 
-    if (stageCard && (card.color === stageCard.color || card.number === stageCard.number)) {
+    if (
+      stageCard &&
+      (card.color === stageCard.color || card.number === stageCard.number)
+    ) {
       const updates: Record<string, any> = {};
       updates[`rooms/${id}/stageCard`] = card;
       updates[`rooms/${id}/players/${currentPlayer}/hand`] = hand.filter(
@@ -235,6 +261,8 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   };
 
   const drawCard = async () => {
+    await checkForDraw();
+
     if (currentPlayer !== currentTurn) return;
 
     const roomRef = ref(database, `rooms/${id}`);
@@ -247,10 +275,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     const drawnCard = newDeck.pop();
 
     const updates: Record<string, any> = {};
-    updates[`rooms/${id}/players/${currentPlayer}/hand`] = [
-      ...hand,
-      drawnCard,
-    ];
+    updates[`rooms/${id}/players/${currentPlayer}/hand`] = [...hand, drawnCard];
     updates[`rooms/${id}/deck`] = newDeck;
 
     const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
@@ -283,7 +308,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     discardPile,
     currentTurn,
     playCard,
-    drawCard
+    drawCard,
   };
 };
 
