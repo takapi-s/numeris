@@ -1,0 +1,64 @@
+{
+  "rooms": {
+    "room1": {
+      "gameState":"waiting",
+      "maxPlayers": 4,
+      "name": "Room 1",
+      "owner": "",
+      "players": {
+        "player1": {
+          "inRoom": false
+        },
+        "player2": {
+          "inRoom": false
+        },
+        "player3": {
+          "inRoom": false
+        },
+        "player4": {
+          "inRoom": false
+        }
+      }
+    },
+    "room2": {
+      "gameState":"waiting",
+      "maxPlayers": 4,
+      "name": "Room 2",
+      "owner": "",
+      "players": {
+        "player1": {
+          "inRoom": false
+        },
+        "player2": {
+          "inRoom": false
+        },
+        "player3": {
+          "inRoom": false
+        },
+        "player4": {
+          "inRoom": false
+        }
+      }
+    },
+    "room3": {
+      "gameState":"waiting",
+      "maxPlayers": 4,
+      "name": "Room 3",
+      "owner": "",
+      "players": {
+        "player1": {
+          "inRoom": false
+        },
+        "player2": {
+          "inRoom": false
+        },
+        "player3": {
+          "inRoom": false
+        },
+        "player4": {
+          "inRoom": false
+        }
+      }
+    }
+  }
+}
