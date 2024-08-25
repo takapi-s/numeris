@@ -1,9 +1,8 @@
-//hooks/useGameLogic.ts
 import { useEffect, useState } from "react";
 import { database } from "../firebaseConfig";
 import { ref, update, onValue, get } from "firebase/database";
 import Papa from "papaparse";
-import { useNavigate } from "react-router-dom"; // 追加
+import { useNavigate } from "react-router-dom";
 
 type Card = {
   color: string;
@@ -19,7 +18,6 @@ type Ability = {
   number: number;
 };
 
-// CSVファイルからアビリティをロードする関数
 const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
   try {
     const response = await fetch(`${process.env.PUBLIC_URL}${filePath}`);
@@ -57,7 +55,6 @@ const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
   }
 };
 
-// シャッフル関数
 const shuffle = (array: any[]) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -66,7 +63,6 @@ const shuffle = (array: any[]) => {
   return array;
 };
 
-// デッキ作成関数
 const createDeck = async () => {
   const colors = ["red", "yellow", "blue"];
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -94,7 +90,6 @@ const createDeck = async () => {
   return shuffle(_deck);
 };
 
-// ゲームの初期化関数
 const initializeGame = async (roomId: string, owner: string) => {
   const roomRef = ref(database, `rooms/${roomId}/players`);
 
@@ -136,11 +131,9 @@ const initializeGame = async (roomId: string, owner: string) => {
 };
 
 const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
-  const navigate = useNavigate(); // 追加
+  const navigate = useNavigate();
   const [hand, setHand] = useState<Card[]>([]);
-  const [opponentHands, setOpponentHands] = useState<Record<string, number>>(
-    {}
-  );
+  const [opponentHands, setOpponentHands] = useState<Record<string, number>>({});
   const [deckCount, setDeckCount] = useState<number>(0);
   const [gameStatus, setGameStatus] = useState<string | null>(null);
   const [route, setRoute] = useState<string[]>([]);
@@ -149,6 +142,9 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const [owner, setOwner] = useState<string | null>(null);
   const [discardPile, setDiscardPile] = useState<Card[]>([]);
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
+  const [passAvailable, setPassAvailable] = useState<boolean>(false);
+  const [hasDrawn, setHasDrawn] = useState<boolean>(false); // ドロー状態の管理
+
 
   const checkForDraw = async () => {
     if (deckCount === 0 && discardPile.length === 0) {
@@ -205,33 +201,32 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   }, [id, currentPlayer, route]);
 
   useEffect(() => {
-    console.log(currentPlayer, owner);
     if (currentPlayer && owner === currentPlayer) {
-      //ゲームステータスがinitializedじゃないときにする
-      console.log("初期化");
       initializeGame(id!, owner);
     }
   }, [currentPlayer, owner, gameStatus, id]);
 
-  //hooks/useGameLogic.ts
   useEffect(() => {
     if (currentPlayer === currentTurn && timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
     } else if (timer === 0 && currentPlayer === currentTurn) {
       drawCard();
+      passTurn();
     }
   }, [timer, currentPlayer, currentTurn]);
 
   useEffect(() => {
     if (currentPlayer === currentTurn) {
       setTimer(20);
+      setHasDrawn(false);
+      setPassAvailable(false); // パスの状態をリセット
     }
   }, [currentTurn]);
 
   useEffect(() => {
     if (gameStatus === "draw") {
-      navigate(`/stickpuzzle/room/${id}`); // Room画面に戻る
+      navigate(`/stickpuzzle/room/${id}`);
     }
   }, [gameStatus, navigate]);
 
@@ -261,6 +256,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   };
 
   const drawCard = async () => {
+    if (hasDrawn) return;
     await checkForDraw();
 
     if (currentPlayer !== currentTurn) return;
@@ -278,9 +274,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     updates[`rooms/${id}/players/${currentPlayer}/hand`] = [...hand, drawnCard];
     updates[`rooms/${id}/deck`] = newDeck;
 
-    const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
-    updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
-
     await update(ref(database), updates);
 
     setDeckCount(newDeck.length);
@@ -293,8 +286,22 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       setDeckCount(newDeck.length);
       setDiscardPile([]);
     }
+    setHasDrawn(true); 
+    setPassAvailable(true); // パスボタンを有効化
+  };
+
+  const passTurn = async () => {
+    if (currentPlayer !== currentTurn) return;
+
+    const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
+
+    const updates: Record<string, any> = {};
+    updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
+
+    await update(ref(database), updates);
 
     setTimer(20);
+    setPassAvailable(false); // パスボタンを無効化
   };
 
   return {
@@ -309,6 +316,9 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     currentTurn,
     playCard,
     drawCard,
+    passAvailable, // パスボタンの状態
+    passTurn, // パス関数
+    hasDrawn, // ドロー済みかどうかの状態
   };
 };
 

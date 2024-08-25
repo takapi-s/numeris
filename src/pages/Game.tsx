@@ -1,13 +1,11 @@
-//pages/Game.tsx
-import React from 'react';
-import { useLocation, useParams } from 'react-router-dom';
-import useGameLogic from '../hooks/useGameLogic';
+import React from "react";
+import { useLocation, useParams } from "react-router-dom";
+import useGameLogic from "../hooks/useGameLogic";
 
 const Game: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const currentPlayer = location.state?.currentPlayer || null;
-  const owner = location.state?.owner || null;
 
   const {
     hand,
@@ -21,6 +19,9 @@ const Game: React.FC = () => {
     currentTurn,
     playCard,
     drawCard,
+    passAvailable,
+    passTurn,
+    hasDrawn,
   } = useGameLogic(id, currentPlayer);
 
   return (
@@ -48,9 +49,14 @@ const Game: React.FC = () => {
           </li>
         ))}
       </ul>
-      <button onClick={drawCard} disabled={currentPlayer !== currentTurn}>
+      <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}>
         Draw from Deck
       </button>
+      {passAvailable && (
+        <button onClick={passTurn} disabled={currentPlayer !== currentTurn}>
+          Pass
+        </button>
+      )}
       <p>Opponent Hands:</p>
       <ul>
         {Object.keys(opponentHands).map((player, index) => (
@@ -62,7 +68,6 @@ const Game: React.FC = () => {
       <p>Remaining Deck: {deckCount} cards</p>
       <p>Discard Pile: {discardPile.length} cards</p>
       <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
-
     </div>
   );
 };
