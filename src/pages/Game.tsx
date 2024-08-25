@@ -68,11 +68,12 @@ const createDeck = async () => {
   }
 
 
-  loadAbilitiesFromCSV('../../assets/decks/NormalDecks.csv').then((abilities) => {
+  loadAbilitiesFromCSV('../../assets/decks/NormalDeck.csv').then((abilities) => {
     console.log(abilities); // ここで出力を確認
   });
   
-  const abilities = await loadAbilitiesFromCSV('../../assets/decks/NormalDecks.csv'); // CSVのパスを指定
+  const abilities = await loadAbilitiesFromCSV('../../assets/decks/NormalDeck.csv'); // CSVのパスを指定
+
   
   // 通常カードにアビリティを付与
   abilities.forEach((ability) => {
@@ -198,7 +199,7 @@ const Game: React.FC = () => {
   }, [id, currentPlayer, route]);
 
   useEffect(() => {
-    if (currentPlayer && owner === currentPlayer && gameStatus !== 'initialized') {
+    if (currentPlayer && owner === currentPlayer) {
       initializeGame(id!, owner);
     }
   }, [currentPlayer, owner, gameStatus, id]);
