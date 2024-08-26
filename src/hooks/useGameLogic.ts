@@ -144,6 +144,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
   const [passAvailable, setPassAvailable] = useState<boolean>(false);
   const [hasDrawn, setHasDrawn] = useState<boolean>(false); // ドロー状態の管理
+  
 
 
   const checkForDraw = async () => {
@@ -224,11 +225,16 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     }
   }, [currentTurn]);
 
+
   useEffect(() => {
-    if (gameStatus === "draw") {
-      navigate(`/stickpuzzle/room/${id}`);
+    if (gameStatus === "draw" || gameStatus === "win") {
+      navigate(`/stickpuzzle/room/${id}`, {
+        state: { currentPlayer, gameStatus },
+      });
     }
-  }, [gameStatus, navigate]);
+  }, [gameStatus, navigate, currentPlayer, id]);
+
+  
 
   const playCard = (card: Card) => {
     if (currentPlayer !== currentTurn) {
@@ -247,8 +253,17 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       );
       updates[`rooms/${id}/discardPile`] = [...discardPile, stageCard];
 
-      const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
-      updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
+      // 手札が0枚になった場合、勝利としてゲーム終了
+      const remainingHand = hand.filter(
+        (c) => !(c.color === card.color && c.number === card.number)
+      );
+      if (remainingHand.length === 0) {
+        updates[`rooms/${id}/gameStatus`] = "win";
+        updates[`rooms/${id}/winner`] = currentPlayer; // 勝者の情報を保存
+      } else {
+        const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
+        updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
+      }
 
       update(ref(database), updates);
       setTimer(20);

@@ -1,7 +1,9 @@
+// pages/Room.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { database } from '../firebaseConfig';
 import { ref, onValue, update } from 'firebase/database';
+import { useLocation } from "react-router-dom";
 
 type PlayerStatus = {
   inRoom: boolean;
@@ -15,16 +17,23 @@ type RoomData = {
   owner: string;
   players: Players;
   gameStatus?: string; // ゲームの状態（optional）
+  winner?: string; // 勝者情報を追加
 };
 
 const Room: React.FC = () => {
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [players, setPlayers] = useState<Players>({});
   const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
   const [owner, setOwner] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [gameStatus, setGameStatus] = useState<string | null>(null); // ゲームの状態を保持
+  const [winner, setWinner] = useState<string | null>(null); // 勝者を保存する状態
+  const location = useLocation();
+  const { currentPlayer: cPlayer, gameStatus: returnedGameStatus } = location.state || {}; // ゲームから戻ってきた場合の状態
+  const [gameStatus, setGameStatus] = useState<string | null>(returnedGameStatus || null); // 初期値を設定
+  const [isReturning, setIsReturning] = useState<boolean>(!!returnedGameStatus); // ゲーム画面から戻ってきたかどうかを判別
+
 
   useEffect(() => {
     if (!id) return;
@@ -42,57 +51,102 @@ const Room: React.FC = () => {
     return () => unsubscribe();
   }, [id]);
 
+  useEffect(() => {
+    // 既にcurrentPlayerが設定されている場合は処理をスキップ
+    if (!id || isReturning){
+      setCurrentPlayer(cPlayer);
+      const roomRef = ref(database, `rooms/${id}/players`);
+      onValue(
+        roomRef,
+        async (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const allPlayers = Object.keys(data);
+            const allPlayersOutOfRoom = allPlayers.every((player) => !data[player].inRoom);
+            if (cPlayer) {
+              const updates: Record<string, any> = {};
+              updates[`rooms/${id}/players/${cPlayer}/inRoom`] = true;
+
+              try {
+                await update(ref(database), updates);
+                setCurrentPlayer(cPlayer);
+              } catch (error) {
+                setMessage('Failed to join the room.');
+              }
+            } else {
+              setMessage('Room is full or unavailable.');
+            }
+          }
+        },
+        { onlyOnce: true }
+      );
+
+    } else {
+      const roomRef = ref(database, `rooms/${id}/players`);
+      onValue(
+        roomRef,
+        async (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const allPlayers = Object.keys(data);
+            const allPlayersOutOfRoom = allPlayers.every((player) => !data[player].inRoom);
+
+            let assignedPlayer: string | null = null;
+
+            if (allPlayersOutOfRoom) {
+              assignedPlayer = allPlayers[0];
+              const ownerUpdate = { [`rooms/${id}/owner`]: assignedPlayer };
+              await update(ref(database), ownerUpdate);
+              setOwner(assignedPlayer);
+            } else {
+              assignedPlayer = allPlayers.find((player) => !data[player].inRoom) || null;
+            }
+
+            if (assignedPlayer) {
+              const updates: Record<string, any> = {};
+              updates[`rooms/${id}/players/${assignedPlayer}/inRoom`] = true;
+
+              try {
+                await update(ref(database), updates);
+                setCurrentPlayer(assignedPlayer);
+              } catch (error) {
+                setMessage('Failed to join the room.');
+              }
+            } else {
+              setMessage('Room is full or unavailable.');
+            }
+          }
+        },
+        { onlyOnce: true }
+      );
+    }
+
+
+  }, [id, isReturning]);
 
   useEffect(() => {
     if (gameStatus === 'started') {
-      // ゲームが開始されたら、currentPlayerの情報を渡してゲーム画面に遷移
       navigate(`/stickpuzzle/game/${id}`, { state: { currentPlayer } });
+    } else if (gameStatus === 'draw') {
+      setMessage('The game is a draw!');
+      setTimeout(async () => {
+        await update(ref(database, `rooms/${id}`), { gameStatus: 'waiting' });
+      }, 3000);
+    } else if (gameStatus === 'win') {
+      const winnerRef = ref(database, `rooms/${id}/winner`);
+      onValue(winnerRef, (snapshot) => {
+        const winnerData = snapshot.val();
+        if (winnerData) {
+          setWinner(winnerData);
+          setMessage(`Congratulations, ${winnerData} is the winner!`);
+        }
+      });
+      setTimeout(async () => {
+        await update(ref(database, `rooms/${id}`), { gameStatus: 'waiting' });
+      }, 3000);
     }
   }, [gameStatus, id, navigate, currentPlayer]);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const roomRef = ref(database, `rooms/${id}/players`);
-    onValue(
-      roomRef,
-      async (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const allPlayers = Object.keys(data);
-          const allPlayersOutOfRoom = allPlayers.every((player) => !data[player].inRoom);
-
-          let assignedPlayer: string | null = null;
-
-          if (allPlayersOutOfRoom) {
-            assignedPlayer = allPlayers[0];
-            const ownerUpdate = { [`rooms/${id}/owner`]: assignedPlayer };
-            await update(ref(database), ownerUpdate);
-            setOwner(assignedPlayer);
-          } else {
-            assignedPlayer = allPlayers.find((player) => !data[player].inRoom) || null;
-          }
-
-          if (assignedPlayer) {
-            const updates: Record<string, any> = {};
-            updates[`rooms/${id}/players/${assignedPlayer}/inRoom`] = true;
-
-            try {
-              await update(ref(database), updates);
-              setCurrentPlayer(assignedPlayer);
-            } catch (error) {
-              setMessage('Failed to join the room.');
-            }
-          } else {
-            setMessage('Room is full or unavailable.');
-          }
-        }
-      },
-      { onlyOnce: true }
-    );
-  }, [id]);
-
-  // 画面切り替え時の退出処理
   useEffect(() => {
     const handleBeforeUnload = async () => {
       if (id && currentPlayer) {
@@ -118,7 +172,6 @@ const Room: React.FC = () => {
     };
   }, [id, currentPlayer, owner, players]);
 
-  // ボタンによる退出処理
   const handleExitRoom = async () => {
     if (!id || !currentPlayer) return;
 
@@ -136,13 +189,12 @@ const Room: React.FC = () => {
 
     try {
       await update(ref(database), updates);
-      navigate('/stickpuzzle'); // ボタンで退出した場合のみ画面遷移
+      navigate('/stickpuzzle');
     } catch (error) {
       setMessage('Failed to exit the room.');
     }
   };
 
-  // ゲームスタート処理
   const handleStartGame = async () => {
     const activePlayers = Object.keys(players).filter((player) => players[player].inRoom);
 
@@ -153,7 +205,7 @@ const Room: React.FC = () => {
       }
 
       const updates: Record<string, any> = {};
-      updates[`rooms/${id}/gameStatus`] = 'started'; // ゲームの状態を "started" に更新
+      updates[`rooms/${id}/gameStatus`] = 'started';
       try {
         await update(ref(database), updates);
         setMessage('Game started!');
@@ -166,7 +218,7 @@ const Room: React.FC = () => {
   return (
     <div className="room-container">
       <h1>Room {id}</h1>
-      {message && <p className="error-message">{message}</p>}
+      {message && <p className="result-message">{message}</p>}
       <div className="player-status">
         {Object.keys(players).map((player) => (
           <div key={player} className="player-item">
@@ -183,12 +235,11 @@ const Room: React.FC = () => {
       </div>
       <button
         onClick={handleStartGame}
-        disabled={owner !== currentPlayer || Object.keys(players).filter((player) => players[player].inRoom).length < 2} // 2人以上いないと無効
+        disabled={owner !== currentPlayer || Object.keys(players).filter((player) => players[player].inRoom).length < 2}
         className={owner !== currentPlayer || Object.keys(players).filter((player) => players[player].inRoom).length < 2 ? 'disabled-button' : 'start-game-button'}
       >
         Start Game
       </button>
-
       <button onClick={handleExitRoom}>Exit Room</button>
       {gameStatus === 'started' && <p>The game has started! Prepare yourself!</p>}
     </div>
