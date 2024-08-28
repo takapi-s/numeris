@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/stickpuzzle/static/css/main.e6c13ad2.css",
-    "main.js": "/stickpuzzle/static/js/main.594d7d9c.js",
-    "static/js/453.77ab6006.chunk.js": "/stickpuzzle/static/js/453.77ab6006.chunk.js",
-    "index.html": "/stickpuzzle/index.html",
-    "main.e6c13ad2.css.map": "/stickpuzzle/static/css/main.e6c13ad2.css.map",
-    "main.594d7d9c.js.map": "/stickpuzzle/static/js/main.594d7d9c.js.map",
-    "453.77ab6006.chunk.js.map": "/stickpuzzle/static/js/453.77ab6006.chunk.js.map"
+    "main.css": "/numeris/static/css/main.e6c13ad2.css",
+    "main.js": "/numeris/static/js/main.8fc19af1.js",
+    "static/js/453.4dfacea0.chunk.js": "/numeris/static/js/453.4dfacea0.chunk.js",
+    "index.html": "/numeris/index.html",
+    "main.e6c13ad2.css.map": "/numeris/static/css/main.e6c13ad2.css.map",
+    "main.8fc19af1.js.map": "/numeris/static/js/main.8fc19af1.js.map",
+    "453.4dfacea0.chunk.js.map": "/numeris/static/js/453.4dfacea0.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.594d7d9c.js"
+    "static/js/main.8fc19af1.js"
   ]
 }
