@@ -55,7 +55,7 @@ const Home: React.FC = () => {
 
           if (availablePlayer) {
             // HomeではinRoomをtrueにしない
-            navigate(`/stickpuzzle/room/${roomId}`);
+            navigate(`/numeris/rooms/${roomId}`);
           } else {
             setMessage('Room is full or unavailable.');
           }

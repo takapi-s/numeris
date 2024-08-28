@@ -8,9 +8,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/stickpuzzle" element={<Home />} />
-        <Route path="/stickpuzzle/room/:id" element={<Room />} />
-        <Route path="/stickpuzzle/game/:id" element={<Game />} /> 
+        <Route path="/numeris" element={<Home />} />
+        <Route path="/numeris/rooms/:id" element={<Room />} />
+        <Route path="/numeris/game/:id" element={<Game />} /> 
       </Routes>
     </Router>
   );

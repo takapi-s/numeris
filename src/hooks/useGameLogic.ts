@@ -3,8 +3,10 @@ import { database } from "../firebaseConfig";
 import { ref, update, onValue, get } from "firebase/database";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
+import { triggerPlayAbility } from "./abilities";
 
-type Card = {
+export type Card = {
+  id: number;
   color: string;
   number: number;
   ability?: Ability;
@@ -55,7 +57,7 @@ const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
   }
 };
 
-const shuffle = (array: any[]) => {
+export const shuffle = (array: any[]) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
@@ -68,10 +70,12 @@ const createDeck = async () => {
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const deck: Card[] = [];
 
+  let id = 0;
   for (let color of colors) {
     for (let i = 0; i < 2; i++) {
       for (let number of numbers) {
-        deck.push({ color, number });
+        deck.push({ id, color, number });
+        id += 1;
       }
     }
   }
@@ -130,10 +134,32 @@ const initializeGame = async (roomId: string, owner: string) => {
   await update(ref(database), updates);
 };
 
+const isPlayable = (card: Card, stageCard: Card | null): boolean => {
+  if (!stageCard || card.ability?.name === "reaper") return false; // ステージカードがない場合はプレイ不可
+
+  if (card.ability?.name === "curse") {
+    // "curse"の場合は数値が一致しないとプレイ不可
+    return card.number === stageCard.number;
+  }
+
+  return (
+    card.color === stageCard.color ||
+    card.number === stageCard.number ||
+    card.ability?.name === "rainbow" // 何かしらの特殊能力を持つ場合
+  );
+};
+
+
+
+
+
+
 const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const navigate = useNavigate();
   const [hand, setHand] = useState<Card[]>([]);
-  const [opponentHands, setOpponentHands] = useState<Record<string, number>>({});
+  const [opponentHands, setOpponentHands] = useState<Record<string, number>>(
+    {}
+  );
   const [deckCount, setDeckCount] = useState<number>(0);
   const [gameStatus, setGameStatus] = useState<string | null>(null);
   const [route, setRoute] = useState<string[]>([]);
@@ -144,9 +170,60 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const [currentTurn, setCurrentTurn] = useState<string | null>(null);
   const [passAvailable, setPassAvailable] = useState<boolean>(false);
   const [hasDrawn, setHasDrawn] = useState<boolean>(false); // ドロー状態の管理
+  const [selectedCards, setSelectedCards] = useState<Card[]>([]);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectN, setSelectN] = useState<number>(0);
+  const [playFlag, setplayFlag] = useState(true);
+  
+
+  useEffect(() => {
+    if (selectedCards.length === selectN && selectN !== 0) {
+      // ここに処理を追加します。例としてコンソールにメッセージを表示します。
+      console.log(`Selected ${selectN} cards:`, selectedCards);
+      const updates: Record<string, any> = {};
+      updates[`rooms/${id}/players/${currentPlayer}/selectedCards`] = selectedCards;
+      updates[`rooms/${id}/players/${currentPlayer}/selectMode`] = false;
+      
+      update(ref(database), updates);
+      setSelectedCards([]);
+      setSelectMode(false);
+    }
+  }, [selectedCards, selectN, id, currentPlayer]);
   
 
 
+
+  useEffect(() => {
+    //selectModeがtrueになるとselectNを読み取り設定
+    if (id && currentPlayer) {
+      const roomRef = ref(database, `rooms/${id}/players/${currentPlayer}/selectMode`);
+      const unsubscribe = onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data !== null) {
+          setSelectMode(data);
+  
+          if (data === true) {
+            console.log("Select mode is active.");
+            const selectNRef = ref(database, `rooms/${id}/players/${currentPlayer}/selectN`);
+            onValue(selectNRef, (selectNSnapshot) => {
+              const selectN = selectNSnapshot.val();
+              if (selectN !== null) {
+                console.log(selectN)
+                setSelectN(selectN);
+
+              }
+            });
+          }
+        }
+      });
+  
+      return () => unsubscribe();
+    }
+  }, [id, currentPlayer]);
+  
+  
+
+  
   const checkForDraw = async () => {
     if (deckCount === 0 && discardPile.length === 0) {
       await update(ref(database), {
@@ -154,6 +231,23 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       });
     }
   };
+
+  const toggleCardSelection = (card: Card) => {
+    setSelectedCards((prevSelectedCards) => {
+      if (prevSelectedCards.some((selectedCard) => selectedCard.id === card.id)) {
+        // 既に選択されている場合はリストから削除
+        return prevSelectedCards.filter(
+          (selectedCard) => selectedCard.id !== card.id
+        );
+      } else {
+        // 選択されていない場合はリストに追加
+        return [...prevSelectedCards, card];
+      }
+    });
+  };
+
+
+
 
   useEffect(() => {
     if (!id) return;
@@ -207,7 +301,13 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     }
   }, [currentPlayer, owner, gameStatus, id]);
 
+
   useEffect(() => {
+    // selectModeがtrueになった場合、タイマーを停止
+    if (selectMode) {
+      return; // タイマーを停止するため、何もせずにreturn
+    }
+  
     if (currentPlayer === currentTurn && timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
@@ -215,16 +315,16 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       drawCard();
       passTurn();
     }
-  }, [timer, currentPlayer, currentTurn]);
+  }, [timer, currentPlayer, currentTurn, selectMode]);
 
   useEffect(() => {
     if (currentPlayer === currentTurn) {
       setTimer(20);
       setHasDrawn(false);
+      setplayFlag(false);
       setPassAvailable(false); // パスの状態をリセット
     }
   }, [currentTurn]);
-
 
   useEffect(() => {
     if (gameStatus === "draw" || gameStatus === "win") {
@@ -234,90 +334,131 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     }
   }, [gameStatus, navigate, currentPlayer, id]);
 
-  
+  const playCard = async (card: Card) => {
+    setplayFlag(true);
 
-  const playCard = (card: Card) => {
+
     if (currentPlayer !== currentTurn) {
       alert("It's not your turn!");
       return;
     }
 
-    if (
-      stageCard &&
-      (card.color === stageCard.color || card.number === stageCard.number)
-    ) {
-      const updates: Record<string, any> = {};
-      updates[`rooms/${id}/stageCard`] = card;
-      updates[`rooms/${id}/players/${currentPlayer}/hand`] = hand.filter(
-        (c) => !(c.color === card.color && c.number === card.number)
-      );
-      updates[`rooms/${id}/discardPile`] = [...discardPile, stageCard];
+    const updates: Record<string, any> = {};
+    //ステージカードに移動
+    updates[`rooms/${id}/stageCard`] = card;
 
-      // 手札が0枚になった場合、勝利としてゲーム終了
-      const remainingHand = hand.filter(
-        (c) => !(c.color === card.color && c.number === card.number)
-      );
-      if (remainingHand.length === 0) {
-        updates[`rooms/${id}/gameStatus`] = "win";
-        updates[`rooms/${id}/winner`] = currentPlayer; // 勝者の情報を保存
-      } else {
-        const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
-        updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
-      }
+    // カードのIDを使用して正確に1枚を削除
+    const updatedHand = hand.filter((c) => c.id !== card.id);
+    updates[`rooms/${id}/players/${currentPlayer}/hand`] = updatedHand;
+    updates[`rooms/${id}/discardPile`] = [...discardPile, stageCard];
 
-      update(ref(database), updates);
-      setTimer(20);
-    }
+    // Firebaseにアップデートを反映
+    await update(ref(database), updates);
+
+    //アビリティを発動
+    await triggerPlayAbility(card, currentPlayer!, id!, setTimer);
+
+    // 手札が0枚になった場合、勝利としてゲーム終了
+    // Firebaseから最新の手札を再取得
+     // プレイヤー全員の手札をチェック
+     const playersRef = ref(database, `rooms/${id}/players`);
+     const playersSnapshot = await get(playersRef);
+     const players = playersSnapshot.val() || {};
+ 
+     let winner = null;
+     for (const playerId in players) {
+         const playerHand = players[playerId].hand || [];
+         if (playerHand.length === 0) {
+             winner = playerId;
+             break;
+         }
+     }
+ 
+     if (winner) {
+         // 勝者が見つかった場合、ゲームを終了
+         updates[`rooms/${id}/gameStatus`] = "win";
+         updates[`rooms/${id}/winner`] = winner; // 勝者の情報を保存
+         await update(ref(database), updates);
+     } else {
+         // 次のターンへ
+         await passTurn();
+     }
+
+    setTimer(20);
   };
+
 
   const drawCard = async () => {
     if (hasDrawn) return;
     await checkForDraw();
-
+  
     if (currentPlayer !== currentTurn) return;
-
+  
     const roomRef = ref(database, `rooms/${id}`);
     const snapshot = await get(roomRef);
     const data = snapshot.val();
-
+  
     if (!data) return;
-
+  
     let newDeck = [...data.deck];
+  
+    // デッキが空である場合の処理
+    if (newDeck.length === 0) {
+      if (discardPile.length > 0) {
+        newDeck = shuffle([...discardPile]);
+        await update(ref(database), {
+          [`rooms/${id}/deck`]: newDeck,
+          [`rooms/${id}/discardPile`]: [],
+        });
+        setDeckCount(newDeck.length);
+        setDiscardPile([]);
+      } else {
+        // ディスカードも空の場合はリターンして処理を中断
+        return;
+      }
+    }
+  
     const drawnCard = newDeck.pop();
-
+  
+    // drawnCardがundefinedである場合は処理を中断
+    if (!drawnCard) return;
+  
     const updates: Record<string, any> = {};
     updates[`rooms/${id}/players/${currentPlayer}/hand`] = [...hand, drawnCard];
     updates[`rooms/${id}/deck`] = newDeck;
-
+  
     await update(ref(database), updates);
-
+  
     setDeckCount(newDeck.length);
-
-    if (newDeck.length === 0 && discardPile.length > 0) {
-      newDeck = shuffle([...discardPile]);
-      updates[`rooms/${id}/deck`] = newDeck;
-      updates[`rooms/${id}/discardPile`] = [];
-      await update(ref(database), updates);
-      setDeckCount(newDeck.length);
-      setDiscardPile([]);
-    }
-    setHasDrawn(true); 
+    setHasDrawn(true);
     setPassAvailable(true); // パスボタンを有効化
   };
+  
 
   const passTurn = async () => {
-    if (currentPlayer !== currentTurn) return;
-
-    const nextPlayerIndex = (route.indexOf(currentTurn!) + 1) % route.length;
-
+    // 最新の currentPlayer を取得
+    const currentPlayerSnapshot = await get(ref(database, `rooms/${id}/currentTurn`));
+    const currentPlayer = currentPlayerSnapshot.val();
+    console.log("passTurn: cut")
+    console.log(currentPlayer)
+    // 次のプレイヤーのインデックスを計算
+    const nextPlayerIndex = (route.indexOf(currentPlayer!) + 1) % route.length;
+    console.log("passTurn: cut")
+    console.log(route[nextPlayerIndex])
+    // 更新する内容を準備
     const updates: Record<string, any> = {};
     updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
-
+  
+    // Firebaseのデータを更新
     await update(ref(database), updates);
-
+  
+    // タイマーをリセットして、パスボタンを無効化
     setTimer(20);
     setPassAvailable(false); // パスボタンを無効化
   };
+  
+  
+
 
   return {
     hand,
@@ -334,6 +475,11 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     passAvailable, // パスボタンの状態
     passTurn, // パス関数
     hasDrawn, // ドロー済みかどうかの状態
+    isPlayable,
+    selectMode,
+    toggleCardSelection,
+    selectedCards,
+    playFlag
   };
 };
 

@@ -126,7 +126,7 @@ const Room: React.FC = () => {
 
   useEffect(() => {
     if (gameStatus === 'started') {
-      navigate(`/stickpuzzle/game/${id}`, { state: { currentPlayer } });
+      navigate(`/numeris/game/${id}`, { state: { currentPlayer } });
     } else if (gameStatus === 'draw') {
       setMessage('The game is a draw!');
       setTimeout(async () => {
@@ -189,7 +189,7 @@ const Room: React.FC = () => {
 
     try {
       await update(ref(database), updates);
-      navigate('/stickpuzzle');
+      navigate('/numeris');
     } catch (error) {
       setMessage('Failed to exit the room.');
     }

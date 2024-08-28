@@ -21,9 +21,17 @@ const Game: React.FC = () => {
     drawCard,
     passAvailable,
     passTurn,
+    isPlayable, // 新たに取得
+    selectMode,
+    toggleCardSelection,
+    selectedCards,
     hasDrawn,
+    playFlag
+
   } = useGameLogic(id, currentPlayer);
 
+
+  
   return (
     <div className="game-container">
       <h1>Game Room {id}</h1>
@@ -40,15 +48,36 @@ const Game: React.FC = () => {
       </p>
 
       <p>Your Hand:</p>
-      <ul>
-        {hand.map((card, index) => (
-          <li key={index}>
-            <button onClick={() => playCard(card)} disabled={currentPlayer !== currentTurn}>
-              {card.color} - {card.number} {card.ability?.name && `(${card.ability.name})`}
-            </button>
-          </li>
-        ))}
-      </ul>
+<ul>
+  {hand.map((card) => (
+    <li key={card.id}>
+      {selectMode ? (
+        // 選択モード時の表示
+        <button
+          onClick={() => toggleCardSelection(card)}
+          style={{
+            backgroundColor: selectedCards.some((c) => c.id === card.id)
+              ? "lightgreen"
+              : "white",
+          }}
+        >
+          {card.color} - {card.number} {card.ability?.name && `(${card.ability.name})`}
+        </button>
+      ) : (
+        // 通常時の表示
+        <button
+          onClick={() => playCard(card)}
+          disabled={
+            (currentPlayer !== currentTurn || !isPlayable(card, stageCard)) || playFlag
+          }
+        >
+          id:{card.id} - {card.color} - {card.number} {card.ability?.name && `(${card.ability.name})`}
+        </button>
+      )}
+    </li>
+  ))}
+</ul>
+
       <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}>
         Draw from Deck
       </button>
@@ -73,3 +102,4 @@ const Game: React.FC = () => {
 };
 
 export default Game;
+
