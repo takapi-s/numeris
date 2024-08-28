@@ -7,4 +7,4 @@ npm install react-router-dom<br>
 npm install papaparse<br>
 
 ## URL
-[pages](https://takapi-s.github.io/stickpuzzle/)
+[pages](https://takapi-s.github.io/numeris/)
