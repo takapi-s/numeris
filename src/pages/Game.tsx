@@ -1,6 +1,9 @@
+//pages/Game.tsx
 import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 import useGameLogic from "../hooks/useGameLogic";
+import "../css/Game.css"
+import "../css/CardStyle.css"
 
 const Game: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,61 +34,20 @@ const Game: React.FC = () => {
   } = useGameLogic(id, currentPlayer);
 
 
-  
+
   return (
     <div className="game-container">
-      <h1>Game Room {id}</h1>
-      <p>
-        Current Stage Card: {stageCard ? `${stageCard.color} - ${stageCard.number}` : "None"}
-        {stageCard?.ability && (
-          <span>
-            <br />
-            Ability: {stageCard.ability.title}
-            {stageCard.ability.playAbility && ` - ${stageCard.ability.playAbility}`}
-            {stageCard.ability.traitAbility && ` - ${stageCard.ability.traitAbility}`}
-          </span>
-        )}
+      <h1>{id}</h1>
+      <p
+        className={`stage-card ${stageCard?.color || ''} ${stageCard?.ability?.name || ''}`}
+      >
+        {stageCard ? `${stageCard.color} - ${stageCard.number}` : "None"}
       </p>
-
-      <p>Your Hand:</p>
-<ul>
-  {hand.map((card) => (
-    <li key={card.id}>
-      {selectMode ? (
-        // 選択モード時の表示
-        <button
-          onClick={() => toggleCardSelection(card)}
-          style={{
-            backgroundColor: selectedCards.some((c) => c.id === card.id)
-              ? "lightgreen"
-              : "white",
-          }}
-        >
-          {card.color} - {card.number} {card.ability?.name && `(${card.ability.name})`}
-        </button>
-      ) : (
-        // 通常時の表示
-        <button
-          onClick={() => playCard(card)}
-          disabled={
-            (currentPlayer !== currentTurn || !isPlayable(card, stageCard)) || playFlag
-          }
-        >
-          id:{card.id} - {card.color} - {card.number} {card.ability?.name && `(${card.ability.name})`}
-        </button>
-      )}
-    </li>
-  ))}
-</ul>
 
       <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}>
         Draw from Deck
       </button>
-      {passAvailable && (
-        <button onClick={passTurn} disabled={currentPlayer !== currentTurn}>
-          Pass
-        </button>
-      )}
+
       <p>Opponent Hands:</p>
       <ul>
         {Object.keys(opponentHands).map((player, index) => (
@@ -96,7 +58,49 @@ const Game: React.FC = () => {
       </ul>
       <p>Remaining Deck: {deckCount} cards</p>
       <p>Discard Pile: {discardPile.length} cards</p>
-      <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
+      {passAvailable && (
+        <button onClick={passTurn} disabled={currentPlayer !== currentTurn}>
+          Pass
+        </button>
+      )}
+      <div className="Stage">
+        <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
+      </div>
+      <div className="myHand">
+        <ul>
+          {hand.map((card) => (
+            <li key={card.id}>
+              {selectMode ? (
+                // 選択モード時の表示
+                <button
+                  onClick={() => toggleCardSelection(card)}
+                  className={`card-button ${selectedCards.some((c) => c.id === card.id) ? "selected" : ""}`}
+                  style={{
+                    backgroundColor: selectedCards.some((c) => c.id === card.id)
+                      ? "lightgreen"
+                      : "white",
+                  }}
+                >
+                  {card.number}
+                </button>
+              ) : (
+                // 通常時の表示
+                <button
+                  onClick={() => playCard(card)}
+                  className={`card-button ${card.color} ${card.ability?.name ? card.ability.name : ''}`}
+                  disabled={
+                    (currentPlayer !== currentTurn || !isPlayable(card, stageCard)) || playFlag
+                  }
+                >
+                  {card.number}
+                </button>
+
+              )}
+            </li>
+          ))}
+
+        </ul>
+      </div>
     </div>
   );
 };

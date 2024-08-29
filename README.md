@@ -8,3 +8,10 @@ npm install papaparse<br>
 
 ## URL
 [pages](https://takapi-s.github.io/numeris/)
+
+
+# asset
+カードの縦横
+1378*2039
+カードアイコン
+1378*950

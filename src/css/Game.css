@@ -1,0 +1,39 @@
+
+.game-container {
+    height: 100%;
+    background-color: blue;
+
+}
+
+.stage {
+    background-color: #5dbb32aa;
+    height: auto;
+}
+
+
+.myHand {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 25vh;
+    background-color: rgba(52, 13, 9, 0.733); /* 背景色は任意で設定 */
+    box-sizing: border-box;
+    justify-content: center; /* 水平方向に中央寄せ */
+    align-items: center; /* 垂直方向に中央寄せ */
+  }
+  
+
+
+.myHand ul {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .myHand li {
+    margin: 0 5px; /* 要素間のスペースを調整 */
+  }
+  

@@ -66,7 +66,7 @@ export const shuffle = (array: any[]) => {
 };
 
 const createDeck = async () => {
-  const colors = ["red", "yellow", "blue"];
+  const colors = ["red", "green", "blue"];
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const deck: Card[] = [];
 
@@ -149,11 +149,6 @@ const isPlayable = (card: Card, stageCard: Card | null): boolean => {
   );
 };
 
-
-
-
-
-
 const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const navigate = useNavigate();
   const [hand, setHand] = useState<Card[]>([]);
@@ -174,56 +169,52 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectN, setSelectN] = useState<number>(0);
   const [playFlag, setplayFlag] = useState(true);
-  
 
   useEffect(() => {
     if (selectedCards.length === selectN && selectN !== 0) {
       // ここに処理を追加します。例としてコンソールにメッセージを表示します。
-      console.log(`Selected ${selectN} cards:`, selectedCards);
       const updates: Record<string, any> = {};
-      updates[`rooms/${id}/players/${currentPlayer}/selectedCards`] = selectedCards;
+      updates[`rooms/${id}/players/${currentPlayer}/selectedCards`] =
+        selectedCards;
       updates[`rooms/${id}/players/${currentPlayer}/selectMode`] = false;
-      
+
       update(ref(database), updates);
       setSelectedCards([]);
       setSelectMode(false);
     }
   }, [selectedCards, selectN, id, currentPlayer]);
-  
-
-
 
   useEffect(() => {
     //selectModeがtrueになるとselectNを読み取り設定
     if (id && currentPlayer) {
-      const roomRef = ref(database, `rooms/${id}/players/${currentPlayer}/selectMode`);
+      const roomRef = ref(
+        database,
+        `rooms/${id}/players/${currentPlayer}/selectMode`
+      );
       const unsubscribe = onValue(roomRef, (snapshot) => {
         const data = snapshot.val();
         if (data !== null) {
           setSelectMode(data);
-  
+
           if (data === true) {
-            console.log("Select mode is active.");
-            const selectNRef = ref(database, `rooms/${id}/players/${currentPlayer}/selectN`);
+            const selectNRef = ref(
+              database,
+              `rooms/${id}/players/${currentPlayer}/selectN`
+            );
             onValue(selectNRef, (selectNSnapshot) => {
               const selectN = selectNSnapshot.val();
               if (selectN !== null) {
-                console.log(selectN)
                 setSelectN(selectN);
-
               }
             });
           }
         }
       });
-  
+
       return () => unsubscribe();
     }
   }, [id, currentPlayer]);
-  
-  
 
-  
   const checkForDraw = async () => {
     if (deckCount === 0 && discardPile.length === 0) {
       await update(ref(database), {
@@ -234,7 +225,9 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
   const toggleCardSelection = (card: Card) => {
     setSelectedCards((prevSelectedCards) => {
-      if (prevSelectedCards.some((selectedCard) => selectedCard.id === card.id)) {
+      if (
+        prevSelectedCards.some((selectedCard) => selectedCard.id === card.id)
+      ) {
         // 既に選択されている場合はリストから削除
         return prevSelectedCards.filter(
           (selectedCard) => selectedCard.id !== card.id
@@ -245,9 +238,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       }
     });
   };
-
-
-
 
   useEffect(() => {
     if (!id) return;
@@ -301,13 +291,12 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     }
   }, [currentPlayer, owner, gameStatus, id]);
 
-
   useEffect(() => {
     // selectModeがtrueになった場合、タイマーを停止
     if (selectMode) {
       return; // タイマーを停止するため、何もせずにreturn
     }
-  
+
     if (currentPlayer === currentTurn && timer > 0) {
       const countdown = setTimeout(() => setTimer(timer - 1), 1000);
       return () => clearTimeout(countdown);
@@ -328,7 +317,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
   useEffect(() => {
     if (gameStatus === "draw" || gameStatus === "win") {
-      navigate(`/stickpuzzle/room/${id}`, {
+      navigate(`/numeris/rooms/${id}`, {
         state: { currentPlayer, gameStatus },
       });
     }
@@ -336,7 +325,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
   const playCard = async (card: Card) => {
     setplayFlag(true);
-
 
     if (currentPlayer !== currentTurn) {
       alert("It's not your turn!");
@@ -360,48 +348,51 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
     // 手札が0枚になった場合、勝利としてゲーム終了
     // Firebaseから最新の手札を再取得
-     // プレイヤー全員の手札をチェック
-     const playersRef = ref(database, `rooms/${id}/players`);
-     const playersSnapshot = await get(playersRef);
-     const players = playersSnapshot.val() || {};
- 
-     let winner = null;
-     for (const playerId in players) {
-         const playerHand = players[playerId].hand || [];
-         if (playerHand.length === 0) {
-             winner = playerId;
-             break;
-         }
-     }
- 
-     if (winner) {
-         // 勝者が見つかった場合、ゲームを終了
-         updates[`rooms/${id}/gameStatus`] = "win";
-         updates[`rooms/${id}/winner`] = winner; // 勝者の情報を保存
-         await update(ref(database), updates);
-     } else {
-         // 次のターンへ
-         await passTurn();
-     }
+    // プレイヤー全員の手札をチェック
+
+    // 手札が0枚になった場合、勝利としてゲーム終了
+    const roomRef = ref(database, `rooms/${id}`);
+    const snapshot = await get(roomRef);
+    const data = snapshot.val();
+
+    let winner = null;
+    const players = data.players;
+    for (const playerId of route) {
+      // route内のプレイヤーのみ確認
+      const hand = players[playerId].hand || [];
+      if (hand.length === 0) {
+        winner = playerId;
+        break;
+      }
+    }
+
+    if (winner) {
+      // 勝者が見つかった場合、ゲームを終了
+      updates[`rooms/${id}/gameStatus`] = "win";
+      updates[`rooms/${id}/winner`] = winner; // 勝者の情報を保存
+      await update(ref(database), updates);
+    } else {
+      // 次のターンへ
+      await passTurn();
+    }
 
     setTimer(20);
   };
 
-
   const drawCard = async () => {
     if (hasDrawn) return;
     await checkForDraw();
-  
+
     if (currentPlayer !== currentTurn) return;
-  
+
     const roomRef = ref(database, `rooms/${id}`);
     const snapshot = await get(roomRef);
     const data = snapshot.val();
-  
+
     if (!data) return;
-  
-    let newDeck = [...data.deck];
-  
+
+    let newDeck = [...(data.deck || [])];
+
     // デッキが空である場合の処理
     if (newDeck.length === 0) {
       if (discardPile.length > 0) {
@@ -417,48 +408,42 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
         return;
       }
     }
-  
+
     const drawnCard = newDeck.pop();
-  
+
     // drawnCardがundefinedである場合は処理を中断
     if (!drawnCard) return;
-  
+
     const updates: Record<string, any> = {};
     updates[`rooms/${id}/players/${currentPlayer}/hand`] = [...hand, drawnCard];
     updates[`rooms/${id}/deck`] = newDeck;
-  
+
     await update(ref(database), updates);
-  
+
     setDeckCount(newDeck.length);
     setHasDrawn(true);
     setPassAvailable(true); // パスボタンを有効化
   };
-  
 
   const passTurn = async () => {
     // 最新の currentPlayer を取得
-    const currentPlayerSnapshot = await get(ref(database, `rooms/${id}/currentTurn`));
+    const currentPlayerSnapshot = await get(
+      ref(database, `rooms/${id}/currentTurn`)
+    );
     const currentPlayer = currentPlayerSnapshot.val();
-    console.log("passTurn: cut")
-    console.log(currentPlayer)
     // 次のプレイヤーのインデックスを計算
     const nextPlayerIndex = (route.indexOf(currentPlayer!) + 1) % route.length;
-    console.log("passTurn: cut")
-    console.log(route[nextPlayerIndex])
     // 更新する内容を準備
     const updates: Record<string, any> = {};
     updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
-  
+
     // Firebaseのデータを更新
     await update(ref(database), updates);
-  
+
     // タイマーをリセットして、パスボタンを無効化
     setTimer(20);
     setPassAvailable(false); // パスボタンを無効化
   };
-  
-  
-
 
   return {
     hand,
@@ -479,7 +464,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     selectMode,
     toggleCardSelection,
     selectedCards,
-    playFlag
+    playFlag,
   };
 };
 

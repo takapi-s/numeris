@@ -29,7 +29,6 @@ export const triggerPlayAbility = async (
       await skipNextPlayer(roomId);
       break;
     case "draw":
-      console.log("ability:draw");
       await forceDrawCards(roomId, nextPlayer, 1);
       break;
     case "reverse":
@@ -163,18 +162,12 @@ const skipNextPlayer = async (roomId: string) => {
   const roomRef = ref(database, `rooms/${roomId}`);
   const snapshot = await get(roomRef);
   const data = snapshot.val();
-  console.log("ability:skip");
-
   if (!data) return;
-  console.log("ability:skip");
-
   const route = data.route;
   const currentTurn = data.currentTurn;
   
   const nextPlayerIndex = (route.indexOf(currentTurn) + 1) % route.length;
   const nextPlayer = route[nextPlayerIndex];
-  console.log(nextPlayer);
-
 
 
   const updates: Record<string, any> = {};
@@ -258,8 +251,6 @@ const forceTradeAbility = async (
 const swapHandsAbility = async (roomId: string, data: any) => {
   const route = data.route;
   const hands = route.map((player: string) => [...(data.players[player].hand || [])]); // 手札がない場合に空配列を設定
-  console.log("swaphand");
-  console.log(hands)
 
   const updates: Record<string, any> = {};
 
@@ -267,7 +258,7 @@ const swapHandsAbility = async (roomId: string, data: any) => {
   for (let i = 0; i < route.length; i++) {
     const currentPlayer = route[i];
     const nextHand = hands[(i + route.length - 1) % route.length]; // 前のプレイヤーの手札を取得
-    console.log(`Player: ${currentPlayer}, Next Hand: ${nextHand}`); // ログ出力で確認
+
     updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = nextHand;
   }
 
@@ -284,9 +275,6 @@ const extraTurn = async (roomId: string) => {
   const route = data.route;
   const currentTurn = data.currentTurn;
   const previousPlayerIndex = (route.indexOf(currentTurn) - 1 + route.length) % route.length;
-  console.log("ext")
-  console.log(route[previousPlayerIndex]);
-
 
   const updates: Record<string, any> = {};
   updates[`rooms/${roomId}/currentTurn`] = route[previousPlayerIndex];

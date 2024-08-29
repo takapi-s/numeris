@@ -1,0 +1,115 @@
+/* カードのボタンの共通スタイル */
+
+ul {
+    background-color: #a33;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    list-style-type: none;
+    justify-content: space-between; /* カードを均等に配置 */
+    width: auto; /* カードの数に応じて横幅を自動調整 */
+    max-width: 100%; /* 必要に応じて最大横幅を指定 */
+  }
+  
+  li {
+    
+    margin-right: 10px; /* カード間のスペース */
+  }
+  
+  .card-button {
+    display: inline-block;
+    padding: 10px;
+    /* border: 1px solid #ccc; */
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    aspect-ratio: 2/3;
+    
+    height: 150px; /* カードの高さ */
+
+  }
+
+  .stage-card {
+    text-align: center;
+    border-radius:5px;
+    background-color: #ffffff;
+    height: 150px;
+    width: 100px;
+  }
+
+
+.card-button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 2px solid #ccc;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* ホバー時のスタイル */
+  .card-button:hover {
+    background-color: #f0f0f0;
+    height: 220px;
+  }
+  
+  /* 選択モードで選択されたカードのスタイル */
+  .card-button.selected {
+    background-color: lightgreen;
+  }
+  
+  /* 無効化されたボタンのスタイル */
+  .card-button:disabled {
+    background-color: #ddd;
+    color: #999;
+    cursor: not-allowed;    
+    pointer-events: none; /* ホバーやクリックを無効化 */
+    transform: none; /* ホバーによる変形を無効化 */
+
+  }
+
+  /* カードのcolorに基づくスタイル */
+.card-button.red {
+    /* background-color: #ffcccc; */
+    color: #a33;
+    border: 2px solid #a33;
+  }
+  
+  .card-button.blue {
+    /* background-color: #cce5ff; */
+    color: #0056b3;
+    border: 2px solid #0056b3;
+  }
+  
+  .card-button.green {
+    /* background-color: #ccffcc; */
+    color: #3a9d23;
+    border: 2px solid #3a9d23;
+  }
+  
+  
+  /* カードのabilityに基づくスタイル */
+
+  /* .card-button.skip {
+    border: 3px dashed #d9534f;
+  }
+  
+  .card-button.draw {
+    border: 3px dotted #5bc0de;
+  }
+  
+  .card-button.reverse {
+    border: 3px solid #f0ad4e;
+  }
+  
+  .card-button.wild {
+    background-color: #333;
+    color: #fff;
+  } */
+  
+  /* その他の能力や条件に基づくスタイルを追加 */
+  
+  
