@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { database } from '../firebaseConfig';
 import { ref, onValue, update } from 'firebase/database';
 import { useLocation } from "react-router-dom";
+import "../css/Room.css"
 
 type PlayerStatus = {
   inRoom: boolean;

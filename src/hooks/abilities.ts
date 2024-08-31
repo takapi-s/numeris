@@ -1,5 +1,6 @@
 // /hooks/abilities.ts
-import { Card, shuffle} from "./useGameLogic";
+import { shuffle} from "./useGameLogic";
+import { Card } from "../components/CardButton";
 import { database } from "../firebaseConfig";
 import { get, onValue, ref, update } from "firebase/database";
 import { reverse } from "dns";

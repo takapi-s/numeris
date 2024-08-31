@@ -4,21 +4,8 @@ import { ref, update, onValue, get } from "firebase/database";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
 import { triggerPlayAbility } from "./abilities";
+import { Card, Ability } from "../components/CardButton";
 
-export type Card = {
-  id: number;
-  color: string;
-  number: number;
-  ability?: Ability;
-};
-
-type Ability = {
-  name: string;
-  title: string;
-  playAbility?: string;
-  traitAbility?: string;
-  number: number;
-};
 
 const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
   try {
@@ -215,13 +202,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     }
   }, [id, currentPlayer]);
 
-  const checkForDraw = async () => {
-    if (deckCount === 0 && discardPile.length === 0) {
-      await update(ref(database), {
-        [`rooms/${id}/gameStatus`]: "draw",
-      });
-    }
-  };
 
   const toggleCardSelection = (card: Card) => {
     setSelectedCards((prevSelectedCards) => {
@@ -256,6 +236,20 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
     return () => unsubscribe();
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+  
+    const deckRef = ref(database, `rooms/${id}/deck`);
+    const unsubscribe = onValue(deckRef, (snapshot) => {
+      const newDeck = snapshot.val() || [];
+      setDeckCount(newDeck.length);
+
+    });
+  
+    return () => unsubscribe();
+  }, [id, discardPile]);
+  
 
   useEffect(() => {
     if (!id || !currentPlayer) return;
@@ -381,7 +375,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
   const drawCard = async () => {
     if (hasDrawn) return;
-    await checkForDraw();
 
     if (currentPlayer !== currentTurn) return;
 
@@ -404,7 +397,9 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
         setDeckCount(newDeck.length);
         setDiscardPile([]);
       } else {
-        // ディスカードも空の場合はリターンして処理を中断
+        await update(ref(database), {
+          [`rooms/${id}/gameStatus`]: "draw",
+        });
         return;
       }
     }

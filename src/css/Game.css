@@ -1,39 +1,139 @@
-
 .game-container {
-    height: 100%;
-    background-color: blue;
+  background-size: cover;
+  background-position: top center; /* 画像を上中央に配置する */
+  background-repeat: no-repeat; /* 画像が繰り返し表示されないようにする */
+  align-items: center;
+  background-image: url("/public/back-ground.png");
+
+  width: min(95vw, 95vh * (16 / 9)); /* 横幅の計算 */
+  height: min(95vh, 95vw / (16 / 9)); /* 縦幅の計算 */
+
+  display: flex;
+  justify-content: center; /* 水平方向に中央揃え */
+  align-items: center; /* 垂直方向に中央揃え */
+  flex-direction: column; /* 必要に応じて、縦方向に配置を変更 */
+  position: relative;
+}
+
+.opponentHand{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 50%;
+  width: 100%;
+}
+
+.opponentHand li{
+  height: 100%;
+  list-style-type: none; /* リストのマーカーを非表示にする */
+  padding: 0; /* パディングをリセットする */
+  margin: 0; /* マージンをリセットする */
+  display: flex;
+  flex-direction: column; /* 縦に並べる */
+  align-items: center; /* 中央に揃える（必要に応じて調整可能） */
+}
+
+
+.StageCard {
+  position: absolute;
+  top: 50%; /* 親要素の高さの50% */
+  left: 50%; /* 親要素の幅の50% */
+  transform: translate(-50%, -50%); /* 自身の幅と高さの50%を引いて、正確に中央に配置 */
+  height: 40%;
+  width: 40%;
 
 }
 
-.stage {
-    background-color: #5dbb32aa;
-    height: auto;
+
+
+
+.game-container .myHand {
+  position: absolute;
+  top: 70%;
+  left: 10%;  
+  height: 30%;
+  width: 80%;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  white-space: nowrap; /* リストの要素が横に並ぶようにします */
+  -ms-overflow-style: none; /* IE、Edge用のスクロールバー非表示 */
+  scrollbar-width: none; /* Firefox用のスクロールバー非表示 */
+}
+
+.game-container .myHand::-webkit-scrollbar {
+  display: none; /* WebKit系ブラウザ（Chrome, Safariなど）用のスクロールバー非表示 */
 }
 
 
-.myHand {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 25vh;
-    background-color: rgba(52, 13, 9, 0.733); /* 背景色は任意で設定 */
-    box-sizing: border-box;
-    justify-content: center; /* 水平方向に中央寄せ */
-    align-items: center; /* 垂直方向に中央寄せ */
-  }
-  
 
 
-.myHand ul {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
+.game-container .myHand ul {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.game-container .myHand li {  
+  position: relative; /* 要素を相対的に配置 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: -3%;
+  height: 100%;
+}
+
+.game-container .myHand li:nth-child(n) {
+  z-index: n; /* 各要素のz-indexを設定し、重なりの順序を制御 */
+}
+
+.game-container .myHand li {
+  transition: z-index 0.3s ease; /* スムーズな変化のためのトランジション */
+}
+
+
+
+.game-container .Deck {
+  position: absolute;
+  top: 50%;
+  left: 70%;
+  background-size: contain;
+  background-position: top center; /* 画像を上中央に配置する */
+  background-repeat: no-repeat; /* 画像が繰り返し表示されないようにする */
+  align-items: center;
+  background-image: url("/public/deck.png");
+  width: 8%;
+  height: 6%;
+  border: none; /* ここでボーダーを無効化 */
+  outline: none; /* フォーカス時のアウトラインも消す場合はこちらを追加 */
+  background-color: transparent; /* 背景色を透過に設定 */
+}
+
+.game-container .StageCard{
+  position: absolute;
   
-  .myHand li {
-    margin: 0 5px; /* 要素間のスペースを調整 */
-  }
   
+}
+.game-container .timer{
+  position: absolute;
+  top: 60%;
+  left: 70%;
+  
+}
+
+.game-container .passButton {
+  position: absolute;
+  top: 50%;
+  left: 80%;
+}
+
+
+.pile {
+  position: absolute;
+  top: 50%;
+  width: 50%;
+}
+

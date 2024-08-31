@@ -2,8 +2,10 @@
 import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 import useGameLogic from "../hooks/useGameLogic";
-import "../css/Game.css"
-import "../css/CardStyle.css"
+import "../css/Game.css";
+import CardButton from "../components/CardButton";
+import StageCard from "../components/StageCard";
+import "../css/OpponentHand.css"
 
 const Game: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,69 +39,95 @@ const Game: React.FC = () => {
 
   return (
     <div className="game-container">
-      <h1>{id}</h1>
-      <p
-        className={`stage-card ${stageCard?.color || ''} ${stageCard?.ability?.name || ''}`}
-      >
-        {stageCard ? `${stageCard.color} - ${stageCard.number}` : "None"}
-      </p>
+      <div className="opponentHand">
+        <ul
+          className={
+            Object.keys(opponentHands).length === 1
+              ? "position-one"
+              : Object.keys(opponentHands).length === 2
+                ? "position-two"
+                : Object.keys(opponentHands).length === 3
+                  ? "position-three"
+                  : Object.keys(opponentHands).length === 4
+                    ? "position-four"
+                    : "position-default"
+          }
+        >
+          {Object.keys(opponentHands).map((player, index) => (
+            <li key={index}>
+              <span className="handNum">{opponentHands[player]}</span>
+              <div className="opponentHandContainer">
+                {Array.from({ length: opponentHands[player] }).map((_, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    className="backcard"
+                    src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
+                    alt="Card"
+                    style={{ width: '20px', height: '30px', marginLeft: '2px' }}
+                  />
+                ))}
+              </div>
 
-      <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}>
-        Draw from Deck
+            </li>
+          ))}
+        </ul>
+
+      </div>
+
+
+
+
+
+
+
+
+
+
+      {/* <p className="Deck Count">Remaining Deck: {deckCount} cards</p> */}
+      <div className="pile">
+        <p>Discard Pile: {discardPile.length} cards</p>
+      </div>
+
+      <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}
+        className="Deck"
+      >
+        {deckCount}
       </button>
 
-      <p>Opponent Hands:</p>
-      <ul>
-        {Object.keys(opponentHands).map((player, index) => (
-          <li key={index}>
-            {player}: {opponentHands[player]} cards
-          </li>
-        ))}
-      </ul>
-      <p>Remaining Deck: {deckCount} cards</p>
-      <p>Discard Pile: {discardPile.length} cards</p>
-      {passAvailable && (
-        <button onClick={passTurn} disabled={currentPlayer !== currentTurn}>
-          Pass
-        </button>
-      )}
-      <div className="Stage">
+      <button onClick={passTurn} disabled={currentPlayer !== currentTurn || !hasDrawn} className="passButton">
+        Pass
+      </button>
+
+      <div className="StageCard">
+
+        <StageCard card={stageCard} />
+
+      </div>
+
+      <div className="timer">
         <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
       </div>
       <div className="myHand">
         <ul>
-          {hand.map((card) => (
-            <li key={card.id}>
-              {selectMode ? (
-                // 選択モード時の表示
-                <button
-                  onClick={() => toggleCardSelection(card)}
-                  className={`card-button ${selectedCards.some((c) => c.id === card.id) ? "selected" : ""}`}
-                  style={{
-                    backgroundColor: selectedCards.some((c) => c.id === card.id)
-                      ? "lightgreen"
-                      : "white",
-                  }}
-                >
-                  {card.number}
-                </button>
-              ) : (
-                // 通常時の表示
-                <button
-                  onClick={() => playCard(card)}
-                  className={`card-button ${card.color} ${card.ability?.name ? card.ability.name : ''}`}
-                  disabled={
-                    (currentPlayer !== currentTurn || !isPlayable(card, stageCard)) || playFlag
-                  }
-                >
-                  {card.number}
-                </button>
-
-              )}
-            </li>
+          {hand.map((card, index) => (
+            <CardButton
+              key={card.id}
+              card={card}
+              selectMode={selectMode}
+              selectedCards={selectedCards}
+              toggleCardSelection={toggleCardSelection}
+              playCard={playCard}
+              currentPlayer={currentPlayer}
+              currentTurn={currentTurn}
+              isPlayable={isPlayable}
+              stageCard={stageCard}
+              playFlag={playFlag}
+              index={index}
+              totalCards={hand.length}
+            />
           ))}
-
         </ul>
+
       </div>
     </div>
   );

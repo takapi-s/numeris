@@ -1,0 +1,75 @@
+.backcard {
+  height: 80%;
+  aspect-ratio: 1/1.618;
+}
+
+.opponentHandContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.position-one,
+.position-two,
+.position-three,
+.position-four,
+.position-default {
+
+  position: relative;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.position-one {
+  display: flex;
+  justify-content: center; /* 水平方向の中央揃え */
+  align-items: center; /* 垂直方向の中央揃え */
+}
+
+/* opponentHandsが1つのときのスタイル */
+.position-one li:nth-child(1) {
+  position: absolute;
+  top: 30%;
+}
+
+/* opponentHandsが2つのときのスタイル */
+.position-two li:nth-child(1) {
+  background-color: #2196f3; /* 青 */
+  color: #fff;
+}
+.position-two li:nth-child(2) {
+  background-color: #4caf50; /* 緑 */
+  color: #fff;
+}
+
+/* opponentHandsが3つのときのスタイル */
+.position-three li:nth-child(1) {
+  background-color: #e91e63; /* ピンク */
+  color: #fff;
+}
+.position-three li:nth-child(2) {
+  background-color: #9c27b0; /* 紫 */
+  color: #fff;
+}
+.position-three li:nth-child(3) {
+  background-color: #ff5722; /* オレンジ */
+  color: #fff;
+}
+
+/* opponentHandsが4つのときのスタイル */
+.position-four li:nth-child(1) {
+  background-color: #00bcd4; /* シアン */
+  color: #fff;
+}
+.position-four li:nth-child(2) {
+  background-color: #8bc34a; /* ライムグリーン */
+  color: #fff;
+}
+.position-four li:nth-child(3) {
+  background-color: #ffc107; /* アンバー */
+  color: #fff;
+}
+.position-four li:nth-child(4) {
+  background-color: #ff9800; /* ディープオレンジ */
+  color: #fff;
+}

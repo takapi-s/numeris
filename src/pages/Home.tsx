@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { database } from '../firebaseConfig';
 import { ref, onValue } from 'firebase/database';
+import "../css/Home.css"
+
 
 type Player = {
   inRoom: boolean;
