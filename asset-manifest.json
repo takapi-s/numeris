@@ -1,15 +1,20 @@
 {
   "files": {
-    "main.css": "/numeris/static/css/main.e6c13ad2.css",
-    "main.js": "/numeris/static/js/main.8fc19af1.js",
+    "main.css": "/numeris/static/css/main.b8e9e70d.css",
+    "main.js": "/numeris/static/js/main.08a38916.js",
     "static/js/453.4dfacea0.chunk.js": "/numeris/static/js/453.4dfacea0.chunk.js",
+    "static/media/deck.png": "/numeris/static/media/deck.421354ffb9ce69bacebb.png",
+    "static/media/back-ground.png": "/numeris/static/media/back-ground.69fc768caa675de93068.png",
+    "static/media/greencard.png": "/numeris/static/media/greencard.ec2eebe0375fdb9cf968.png",
+    "static/media/bluecard.png": "/numeris/static/media/bluecard.38c251297cbaea5de8a5.png",
+    "static/media/redcard.png": "/numeris/static/media/redcard.78d1ecdf3b09591d6f24.png",
     "index.html": "/numeris/index.html",
-    "main.e6c13ad2.css.map": "/numeris/static/css/main.e6c13ad2.css.map",
-    "main.8fc19af1.js.map": "/numeris/static/js/main.8fc19af1.js.map",
+    "main.b8e9e70d.css.map": "/numeris/static/css/main.b8e9e70d.css.map",
+    "main.08a38916.js.map": "/numeris/static/js/main.08a38916.js.map",
     "453.4dfacea0.chunk.js.map": "/numeris/static/js/453.4dfacea0.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e6c13ad2.css",
-    "static/js/main.8fc19af1.js"
+    "static/css/main.b8e9e70d.css",
+    "static/js/main.08a38916.js"
   ]
 }
