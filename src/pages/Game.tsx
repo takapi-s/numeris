@@ -1,14 +1,14 @@
 //pages/Game.tsx
-import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 import useGameLogic from "../hooks/useGameLogic";
 import "../css/Game.css";
 import CardButton from "../components/CardButton";
 import StageCard from "../components/StageCard";
 import "../css/OpponentHand.css"
+import React, { useState, useEffect } from "react";
 
 const Game: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { roomID } = useParams<{ roomID: string }>();
   const location = useLocation();
   const currentPlayer = location.state?.currentPlayer || null;
 
@@ -16,7 +16,7 @@ const Game: React.FC = () => {
     hand,
     opponentHands,
     deckCount,
-    gameStatus,
+    gameState,
     route,
     stageCard,
     timer,
@@ -33,52 +33,68 @@ const Game: React.FC = () => {
     hasDrawn,
     playFlag
 
-  } = useGameLogic(id, currentPlayer);
+  } = useGameLogic(roomID, currentPlayer);
+
+  // 自分の順番を基準にしてrouteを回転させる
+  const currentIndex = route.indexOf(currentPlayer);
+  const rotatedRoute = [
+    ...route.slice(currentIndex + 1),
+    ...route.slice(0, currentIndex),
+  ];
 
 
+    // 初期の順番を保存するためのステート
+    const [initialOrder, setInitialOrder] = useState<string[]>([]);
+
+    // 最初にプレイヤーの順番を設定
+    useEffect(() => {
+      if (route.length > 0 && initialOrder.length === 0) {
+        const currentIndex = route.indexOf(currentPlayer);
+        const rotatedRoute = [
+          ...route.slice(currentIndex + 1),
+          ...route.slice(0, currentIndex),
+        ];
+        setInitialOrder(rotatedRoute.filter(player => player !== currentPlayer));
+      }
+    }, [route, currentPlayer, initialOrder]);
 
   return (
     <div className="game-container">
+
       <div className="opponentHand">
         <ul
           className={
-            Object.keys(opponentHands).length === 1
+            rotatedRoute.length === 1
               ? "position-one"
-              : Object.keys(opponentHands).length === 2
+              : rotatedRoute.length === 2
                 ? "position-two"
-                : Object.keys(opponentHands).length === 3
+                : rotatedRoute.length === 3
                   ? "position-three"
-                  : Object.keys(opponentHands).length === 4
+                  : rotatedRoute.length === 4
                     ? "position-four"
                     : "position-default"
           }
         >
-          {Object.keys(opponentHands).map((player, index) => (
-            <li key={index}>
-              <span className="handNum">{opponentHands[player]}</span>
-              <div className="opponentHandContainer">
-                {Array.from({ length: opponentHands[player] }).map((_, imgIndex) => (
-                  <img
-                    key={imgIndex}
-                    className="backcard"
-                    src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
-                    alt="Card"
-                    style={{ width: '20px', height: '30px', marginLeft: '2px' }}
-                  />
-                ))}
-              </div>
-
-            </li>
+          {rotatedRoute.map((player, index) => (
+            player !== currentPlayer && (
+              <li key={index} className={`opponent-position-${index}`}>
+                <span className="handNum">{player} : {opponentHands[player]}</span>
+                <div className="opponentHandContainer">
+                  {Array.from({ length: opponentHands[player] }).map((_, imgIndex) => (
+                    <img
+                      key={imgIndex}
+                      className="backcard"
+                      src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
+                      alt="Card"
+                      style={{ width: '20px', height: '30px', marginLeft: '2px' }}
+                    />
+                  ))}
+                </div>
+              </li>
+            )
           ))}
         </ul>
-
       </div>
-
-
-
-
-
-
 
 
 

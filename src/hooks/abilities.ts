@@ -50,7 +50,7 @@ export const triggerPlayAbility = async (
 
     //Colorselctはボタンを表示する関数を作ってから
 
-    case "swapHands":
+    case "swap":
       await swapHandsAbility(roomId, data);
       break;
 

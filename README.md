@@ -5,6 +5,7 @@ npm install gh-pages --save-dev <br>
 npm install firebase<br>
 npm install react-router-dom<br>
 npm install papaparse<br>
+npm install firebase/database@latest<br>
 
 ## URL
 [pages](https://takapi-s.github.io/numeris/)

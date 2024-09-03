@@ -57,12 +57,12 @@ const createDeck = async () => {
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const deck: Card[] = [];
 
+
   let id = 0;
   for (let color of colors) {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 2; i++) { // ここで2セット作る
       for (let number of numbers) {
-        deck.push({ id, color, number });
-        id += 1;
+        deck.push({ id: id++, color, number });
       }
     }
   }
@@ -93,10 +93,10 @@ const initializeGame = async (roomId: string, owner: string) => {
   const data = snapshot.val();
   const deck = await createDeck();
 
-  const inRoomPlayers = Object.keys(data).filter(
-    (player) => data[player].inRoom === true
-  );
+  // ルーム内にいる全プレイヤーを取得
+  const inRoomPlayers = Object.keys(data);
 
+  // プレイヤーリストをシャッフル
   const shuffledTurnOrder = shuffle([...inRoomPlayers]);
   const updates: Record<string, any> = {};
 
@@ -116,7 +116,7 @@ const initializeGame = async (roomId: string, owner: string) => {
   updates[`rooms/${roomId}/discardPile`] = [];
   updates[`rooms/${roomId}/route`] = shuffledTurnOrder;
   updates[`rooms/${roomId}/currentTurn`] = shuffledTurnOrder[0];
-  updates[`rooms/${roomId}/gameStatus`] = "initialized";
+  updates[`rooms/${roomId}/gameState`] = "initialized";
 
   await update(ref(database), updates);
 };
@@ -143,7 +143,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     {}
   );
   const [deckCount, setDeckCount] = useState<number>(0);
-  const [gameStatus, setGameStatus] = useState<string | null>(null);
+  const [gameState, setGameState] = useState<string | null>(null);
   const [route, setRoute] = useState<string[]>([]);
   const [stageCard, setStageCard] = useState<Card | null>(null);
   const [timer, setTimer] = useState<number>(20);
@@ -197,7 +197,6 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
           }
         }
       });
-
       return () => unsubscribe();
     }
   }, [id, currentPlayer]);
@@ -227,7 +226,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       if (data) {
         setRoute(data.route || []);
         setOwner(data.owner);
-        setGameStatus(data.gameStatus);
+        setGameState(data.gameState);
         setStageCard(data.stageCard || null);
         setDiscardPile(data.discardPile || []);
         setCurrentTurn(data.currentTurn || null);
@@ -280,10 +279,14 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   }, [id, currentPlayer, route]);
 
   useEffect(() => {
+    console.log("iiinitial");
+    console.log(currentPlayer);
+    console.log(owner);
     if (currentPlayer && owner === currentPlayer) {
+      console.log("initial");
       initializeGame(id!, owner);
     }
-  }, [currentPlayer, owner, gameStatus, id]);
+  }, [currentPlayer, owner, gameState, id]);
 
   useEffect(() => {
     // selectModeがtrueになった場合、タイマーを停止
@@ -310,12 +313,13 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   }, [currentTurn]);
 
   useEffect(() => {
-    if (gameStatus === "draw" || gameStatus === "win") {
+    if (gameState === "draw" || gameState === "win") {
+
       navigate(`/numeris/rooms/${id}`, {
-        state: { currentPlayer, gameStatus },
+        state: { playerId: currentPlayer},
       });
     }
-  }, [gameStatus, navigate, currentPlayer, id]);
+  }, [gameState, navigate, currentPlayer, id]);
 
   const playCard = async (card: Card) => {
     setplayFlag(true);
@@ -345,6 +349,11 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     // プレイヤー全員の手札をチェック
 
     // 手札が0枚になった場合、勝利としてゲーム終了
+
+    setTimeout(() => {
+      console.log("tim");
+    }, 3000); // 3
+    
     const roomRef = ref(database, `rooms/${id}`);
     const snapshot = await get(roomRef);
     const data = snapshot.val();
@@ -362,7 +371,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
 
     if (winner) {
       // 勝者が見つかった場合、ゲームを終了
-      updates[`rooms/${id}/gameStatus`] = "win";
+      updates[`rooms/${id}/gameState`] = "win";
       updates[`rooms/${id}/winner`] = winner; // 勝者の情報を保存
       await update(ref(database), updates);
     } else {
@@ -398,7 +407,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
         setDiscardPile([]);
       } else {
         await update(ref(database), {
-          [`rooms/${id}/gameStatus`]: "draw",
+          [`rooms/${id}/gameState`]: "draw",
         });
         return;
       }
@@ -426,6 +435,11 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       ref(database, `rooms/${id}/currentTurn`)
     );
     const currentPlayer = currentPlayerSnapshot.val();
+    
+    const routeSnapshot = await get(ref(database, `rooms/${id}/route`));
+    const _route = routeSnapshot.val()
+    setRoute(_route);
+
     // 次のプレイヤーのインデックスを計算
     const nextPlayerIndex = (route.indexOf(currentPlayer!) + 1) % route.length;
     // 更新する内容を準備
@@ -444,7 +458,7 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     hand,
     opponentHands,
     deckCount,
-    gameStatus,
+    gameState,
     route,
     stageCard,
     timer,
