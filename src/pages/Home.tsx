@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { get, ref, onValue, push, set } from 'firebase/database';
+import { get, ref, onValue, push, set, remove, runTransaction } from 'firebase/database';
 import { database } from '../firebaseConfig'; // Firebase設定ファイルからエクスポートされたdatabaseをインポート
 import { useNavigate } from 'react-router-dom';
 
@@ -8,11 +8,12 @@ interface Room {
   gameState: string;
   owner: string;
   players: Record<string, any>;
-  timestamp: number; // 新しくtimestampフィールドを追加
+  timestamp: number;
 }
 
 const Home: React.FC = () => {
   const [rooms, setRooms] = useState<Record<string, Room>>({});
+  const [isJoining, setIsJoining] = useState(false); // join中かどうかの状態を追加
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,68 +21,96 @@ const Home: React.FC = () => {
     onValue(roomsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        setRooms(data);
+        const updatedRooms: Record<string, Room> = { ...data };
+        Object.entries(updatedRooms).forEach(([roomId, room]) => {
+          if (!room.players || Object.keys(room.players).length === 0) {
+            const roomRef = ref(database, `rooms/${roomId}`);
+            runTransaction(roomRef, (currentRoom) => {
+              if (currentRoom && (!currentRoom.players || Object.keys(currentRoom.players).length === 0)) {
+                return null; // ルームを削除する
+              }
+              return currentRoom; // ルームを削除しない
+            })
+              .then(() => {
+                console.log(`Room ${roomId} deleted due to no players.`);
+              })
+              .catch((error) => {
+                console.error(`Failed to delete room ${roomId}: `, error);
+              });
+
+            delete updatedRooms[roomId]; // ローカル状態からも削除
+          }
+        });
+        setRooms(updatedRooms);
       } else {
         setRooms({});
       }
     });
   }, []);
 
-  const handleJoinRoom = (roomId: string) => {
-    // Roomに入室する処理を実装
+  const handleJoinRoom = (roomId: string, playerId: string) => {
+    setIsJoining(true); // すべてのボタンを非活性化
     console.log(`Joining room: ${roomId}`);
 
     const roomRef = ref(database, `rooms/${roomId}`);
-    get(roomRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const playerCount = data.players ? Object.keys(data.players).length : 0;
-        const newPlayerRef = push(ref(database, `rooms/${roomId}/players`));
-        const newPlayerId = newPlayerRef.key;
-        if (newPlayerId) {
-          console.log("SET", newPlayerId);
+    runTransaction(roomRef, (currentRoom) => {
+      if (currentRoom) {
+        const playerCount = currentRoom.players ? Object.keys(currentRoom.players).length : 0;
 
-          set(newPlayerRef, {
-            name: newPlayerId,
-            isOwner: playerCount === 0 // Set the first player as the owner
-          }).then(() => {
-            if (playerCount === 0) {
-              // Set the first player as the owner of the room
-              const ownerRef = ref(database, `rooms/${roomId}/owner`);
-              set(ownerRef, newPlayerId);
-            }
-          });
-
-
-          navigate(`/numeris/rooms/${roomId}`, {
-            state: { playerId: newPlayerId },
-          });
-
+        if (!currentRoom.players) {
+          currentRoom.players = {};
         }
-      } else {
-        console.log("No data available");
+
+        currentRoom.players[playerId] = {
+          name: playerId,
+          isOwner: playerCount === 0 // 最初のプレイヤーはオーナー
+        };
+
+        if (playerCount === 0) {
+          currentRoom.owner = playerId; // 最初のプレイヤーをオーナーにする
+        }
       }
+
+      return currentRoom;
+    }).then(() => {
+      // プレイヤーをルームに追加後、ルーム画面に移動
+      navigate(`/numeris/rooms/${roomId}`, {
+        state: { playerId: playerId },
+      });
     }).catch((error) => {
       console.error(error);
+      setIsJoining(false); // エラー発生時に再度ボタンを押せるようにする
     });
-
   };
 
-
-
   const handleCreateRoom = () => {
+    setIsJoining(true); // すべてのボタンを非活性化
     const newRoomRef = push(ref(database, 'rooms'));
     const roomId = newRoomRef.key;
-    if (roomId) {
+    const playerId = push(ref(database, 'players')).key; // 自分のplayerIdを生成
+
+    if (roomId && playerId) {
       const newRoom: Room = {
         name: roomId,
         gameState: 'waiting',
-        owner: '', // ここにオーナーを設定する（例えば現在のユーザーID）
-        players: {},
-        timestamp: Date.now(), // 現在のタイムスタンプを追加
+        owner: playerId, // 自分をオーナーに設定
+        players: {
+          [playerId]: {
+            name: playerId,
+            isOwner: true // 自分をオーナーとして設定
+          }
+        },
+        timestamp: Date.now(), // タイムスタンプを追加
       };
+
       set(newRoomRef, newRoom).then(() => {
-        handleJoinRoom(roomId);
+        // ルーム作成後、ルーム画面に移動
+        navigate(`/numeris/rooms/${roomId}`, {
+          state: { playerId: playerId },
+        });
+      }).catch((error) => {
+        console.error(error);
+        setIsJoining(false); // エラー発生時に再度ボタンを押せるようにする
       });
     }
   };
@@ -95,13 +124,12 @@ const Home: React.FC = () => {
           const playerCount = room.players ? Object.keys(room.players).length : 0;
           const isRoomFull = playerCount === 4;
 
-
           return (
             <li key={roomId}>
               {room.name} - Status: {room.gameState} ({playerCount}/4)
               <button
-                onClick={() => handleJoinRoom(roomId)}
-                disabled={isRoomFull || room.gameState !== "waiting"}
+                onClick={() => handleJoinRoom(roomId, push(ref(database, 'players')).key!)}
+                disabled={isJoining || isRoomFull || room.gameState !== "waiting"} // 非活性化フラグを追加
               >
                 {isRoomFull ? 'Room Full' : 'Join Room'}
               </button>
@@ -109,7 +137,7 @@ const Home: React.FC = () => {
           );
         })}
       </ul>
-      <button onClick={handleCreateRoom}>Create New Room</button>
+      <button onClick={handleCreateRoom} disabled={isJoining}>Create New Room</button>
     </div>
   );
 };
