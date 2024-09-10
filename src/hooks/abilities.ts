@@ -196,6 +196,10 @@ const forceDrawCards = async (
         // 捨て札からデッキを再構築してシャッフル
         newDeck = shuffle([...data.discardPile]);
         data.discardPile = []; // 捨て札をクリア
+        await update(ref(database), {
+          [`rooms/${roomId}/deck`]: newDeck,
+          [`rooms/${roomId}/discardPile`]: [],
+        });
       } else {
         // デッキも捨て札もない場合はドローできない
         break;
@@ -220,7 +224,6 @@ const forceDrawCards = async (
 
 const reverseAbility = async (roomId: string, data: any) => {
   const route = [...data.route].reverse();
-
   const updates: Record<string, any> = {};
   updates[`rooms/${roomId}/route`] = route;
   await update(ref(database), updates);
@@ -531,7 +534,6 @@ const perfectAbility = async (
   // Firebase に更新を反映
   await update(ref(database), updates);
 };
-
 const refresh = async (
   roomId: string,
   currentPlayer: string
@@ -551,9 +553,12 @@ const refresh = async (
   
   const updates: Record<string, any> = {};
   updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = [];
-  await update(ref(database), updates)
-  // デッキから新しいカードを手札の枚数分引く
-  await forceDrawCards(roomId, currentPlayer, handSize);
+  await update(ref(database), updates);
+
+  // 手札が0枚でない場合のみデッキからカードを引く
+  if (handSize > 0) {
+    await forceDrawCards(roomId, currentPlayer, handSize);
+  }
 
   // 捨て札を更新
   const _updates: Record<string, any> = {};

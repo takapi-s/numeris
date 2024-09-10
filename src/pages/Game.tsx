@@ -43,58 +43,60 @@ const Game: React.FC = () => {
   ];
 
 
-    // 初期の順番を保存するためのステート
-    const [initialOrder, setInitialOrder] = useState<string[]>([]);
+  // 初期の順番を保存するためのステート
+  const [initialOrder, setInitialOrder] = useState<string[]>([]);
 
-    // 最初にプレイヤーの順番を設定
-    useEffect(() => {
-      if (route.length > 0 && initialOrder.length === 0) {
-        const currentIndex = route.indexOf(currentPlayer);
-        const rotatedRoute = [
-          ...route.slice(currentIndex + 1),
-          ...route.slice(0, currentIndex),
-        ];
-        setInitialOrder(rotatedRoute.filter(player => player !== currentPlayer));
-      }
-    }, [route, currentPlayer, initialOrder]);
+  // 最初にプレイヤーの順番を設定
+  useEffect(() => {
+    if (route.length > 0 && initialOrder.length === 0) {
+      const currentIndex = route.indexOf(currentPlayer);
+      const rotatedRoute = [
+        ...route.slice(currentIndex + 1),
+        ...route.slice(0, currentIndex),
+      ];
+      setInitialOrder(rotatedRoute.filter(player => player !== currentPlayer));
+    }
+  }, [route, currentPlayer, initialOrder]);
 
   return (
     <div className="game-container">
 
-      <div className="opponentHand">
-        <ul
-          className={
-            rotatedRoute.length === 1
-              ? "position-one"
-              : rotatedRoute.length === 2
-                ? "position-two"
-                : rotatedRoute.length === 3
-                  ? "position-three"
-                  : rotatedRoute.length === 4
-                    ? "position-four"
-                    : "position-default"
-          }
+<div className="opponentHand">
+  <ul
+    className={
+      rotatedRoute.length === 1
+        ? "position-one"
+        : rotatedRoute.length === 2
+          ? "position-two"
+          : rotatedRoute.length === 3
+            ? "position-three"
+            : "position-default"
+    }
+  >
+    {rotatedRoute.map((player, index) => (
+      player !== currentPlayer && (
+        <li
+          key={index}
+          className={`opponent-position-${index} ${player === currentTurn ? 'enemy-turn' : ''}`}
         >
-          {rotatedRoute.map((player, index) => (
-            player !== currentPlayer && (
-              <li key={index} className={`opponent-position-${index}`}>
-                <span className="handNum">{player} : {opponentHands[player]}</span>
-                <div className="opponentHandContainer">
-                  {Array.from({ length: opponentHands[player] }).map((_, imgIndex) => (
-                    <img
-                      key={imgIndex}
-                      className="backcard"
-                      src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
-                      alt="Card"
-                      style={{ width: '20px', height: '30px', marginLeft: '2px' }}
-                    />
-                  ))}
-                </div>
-              </li>
-            )
-          ))}
-        </ul>
-      </div>
+          <span className="handNum">{player} : {opponentHands[player]}</span>
+          <div className="opponentHandContainer">
+            {Array.from({ length: Math.min(opponentHands[player], 8) }).map((_, imgIndex) => (
+              <img
+                key={imgIndex}
+                className="backcard"
+                src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
+                alt="Card"
+                style={{ width: '20px', height: '30px', marginLeft: '2px' }}
+              />
+            ))}
+          </div>
+        </li>
+      )
+    ))}
+  </ul>
+</div>
+
 
 
 

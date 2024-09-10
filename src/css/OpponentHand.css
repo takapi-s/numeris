@@ -1,75 +1,72 @@
-.backcard {
-  height: 80%;
-  aspect-ratio: 1/1.618;
+/* 追加するCSSスタイル */
+.enemy-turn {
+  border: 2px solid red;
+  background-color: rgba(255, 0, 0, 0.2);
 }
 
-.opponentHandContainer {
-  display: flex;
-  flex-direction: row;
-}
 
-.position-one,
-.position-two,
-.position-three,
-.position-four,
-.position-default {
 
-  position: relative;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.position-one {
-  display: flex;
-  justify-content: center; /* 水平方向の中央揃え */
-  align-items: center; /* 垂直方向の中央揃え */
-}
-
-/* opponentHandsが1つのときのスタイル */
-.position-one li:nth-child(1) {
+.opponentHand{
   position: absolute;
-  top: 30%;
+  top: 0px;
+  left: 0px;
+  height: 23%;
+  width: 100%;
 }
 
-/* opponentHandsが2つのときのスタイル */
-.position-two li:nth-child(1) {
-  background-color: #2196f3; /* 青 */
-  color: #fff;
+.opponentHand li{
+  height: 100%;
+  list-style-type: none; /* リストのマーカーを非表示にする */
+  padding: 0; /* パディングをリセットする */
+  margin: 0; /* マージンをリセットする */
 }
-.position-two li:nth-child(2) {
-  background-color: #4caf50; /* 緑 */
-  color: #fff;
-}
-
-/* opponentHandsが3つのときのスタイル */
-.position-three li:nth-child(1) {
-  background-color: #e91e63; /* ピンク */
-  color: #fff;
-}
-.position-three li:nth-child(2) {
-  background-color: #9c27b0; /* 紫 */
-  color: #fff;
-}
-.position-three li:nth-child(3) {
-  background-color: #ff5722; /* オレンジ */
-  color: #fff;
+/* For position-one */
+.position-one .opponent-position-0 {
+  /* opponent-position-1 when there is only one opponent */
+  position: absolute;
+  top: 50%; /* Example position */
+  left: 50%; /* Example position */
+  transform: translate(-50%, -50%);
 }
 
-/* opponentHandsが4つのときのスタイル */
-.position-four li:nth-child(1) {
-  background-color: #00bcd4; /* シアン */
-  color: #fff;
+.position-two{
+  
+  width: 100%;
+  height: 100%;
+  margin: 0%;
+  padding: 0%;
+  padding-top: 3%;;
+  display: flex;
 }
-.position-four li:nth-child(2) {
-  background-color: #8bc34a; /* ライムグリーン */
-  color: #fff;
+/* For position-two */
+.position-two .opponent-position-0 {
+  /* opponent-position-1 when there are two opponents */
+  width: 50%;
 }
-.position-four li:nth-child(3) {
-  background-color: #ffc107; /* アンバー */
-  color: #fff;
+
+.position-two .opponent-position-1 {
+  /* opponent-position-2 when there are two opponents */
+  width: 50%;
 }
-.position-four li:nth-child(4) {
-  background-color: #ff9800; /* ディープオレンジ */
-  color: #fff;
+
+.position-three{
+  
+  width: 100%;
+  height: 100%;
+  margin: 0%;
+  padding: 0%;
+  padding-top: 3%;;
+  display: flex;
+}
+/* For position-three */
+.position-three .opponent-position-0 {
+  width: 33%;
+
+}
+.position-three .opponent-position-1 {
+  width: 33%;
+}
+.position-three .opponent-position-2 {
+  width: 33%;
+
 }

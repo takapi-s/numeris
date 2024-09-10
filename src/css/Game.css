@@ -15,23 +15,7 @@
   position: relative;
 }
 
-.opponentHand{
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 50%;
-  width: 100%;
-}
 
-.opponentHand li{
-  height: 100%;
-  list-style-type: none; /* リストのマーカーを非表示にする */
-  padding: 0; /* パディングをリセットする */
-  margin: 0; /* マージンをリセットする */
-  display: flex;
-  flex-direction: column; /* 縦に並べる */
-  align-items: center; /* 中央に揃える（必要に応じて調整可能） */
-}
 
 
 .StageCard {

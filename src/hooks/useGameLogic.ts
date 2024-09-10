@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { database } from "../firebaseConfig";
-import { ref, update, onValue, get } from "firebase/database";
+import { ref, onDisconnect, update, onValue, get } from "firebase/database";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
 import { triggerPlayAbility } from "./abilities";
@@ -313,6 +313,25 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   }, [currentTurn]);
 
   useEffect(() => {
+    if (!id || !currentPlayer) return;
+  
+    const roomRef = ref(database, `rooms/${id}/players/${currentPlayer}`);
+    const gameStateRef = ref(database, `rooms/${id}/gameState`);
+  
+    // Set up onDisconnect to update gameState to 'draw' when the player disconnects
+    const onDisconnectRef = onDisconnect(roomRef);
+    onDisconnectRef.update({ inRoom: false }).then(() => {
+      onDisconnect(gameStateRef).set("draw");
+    }).catch((error) => {
+      console.error("Failed to set onDisconnect behavior:", error);
+    });
+  
+    return () => {
+      onDisconnectRef.cancel(); // Optionally, cancel the onDisconnect when the component unmounts or the player leaves the room
+    };
+  }, [id, currentPlayer]);
+
+  useEffect(() => {
     if (gameState === "draw" || gameState === "win") {
 
       navigate(`/numeris/rooms/${id}`, {
@@ -441,10 +460,10 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     setRoute(_route);
 
     // 次のプレイヤーのインデックスを計算
-    const nextPlayerIndex = (route.indexOf(currentPlayer!) + 1) % route.length;
+    const nextPlayerIndex = (_route.indexOf(currentPlayer!) + 1) % route.length;
     // 更新する内容を準備
     const updates: Record<string, any> = {};
-    updates[`rooms/${id}/currentTurn`] = route[nextPlayerIndex];
+    updates[`rooms/${id}/currentTurn`] = _route[nextPlayerIndex];
 
     // Firebaseのデータを更新
     await update(ref(database), updates);
