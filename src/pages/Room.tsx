@@ -102,6 +102,9 @@ const Room: React.FC = () => {
       } else if (data.gameState === "draw") {
         setResult("DRAW");
         setTimeout(() => updateGameStateToWaiting(roomID), 3000);
+      } else if (data.gameState === "disconnect") {
+        setResult("Disconnect Error");
+        setTimeout(() => updateGameStateToWaiting(roomID), 3000);
       }
 
       setLoading(false);

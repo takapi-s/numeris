@@ -318,10 +318,11 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
     const roomRef = ref(database, `rooms/${id}/players/${currentPlayer}`);
     const gameStateRef = ref(database, `rooms/${id}/gameState`);
   
-    // Set up onDisconnect to update gameState to 'draw' when the player disconnects
+    // Set up onDisconnect to update gameState to 'draw' and remove player when the player disconnects
     const onDisconnectRef = onDisconnect(roomRef);
-    onDisconnectRef.update({ inRoom: false }).then(() => {
-      onDisconnect(gameStateRef).set("draw");
+    onDisconnectRef.remove().then(() => {
+      // When the player disconnects, set the game state to 'draw'
+      onDisconnect(gameStateRef).set("disconnect");
     }).catch((error) => {
       console.error("Failed to set onDisconnect behavior:", error);
     });
@@ -330,9 +331,10 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
       onDisconnectRef.cancel(); // Optionally, cancel the onDisconnect when the component unmounts or the player leaves the room
     };
   }, [id, currentPlayer]);
+  
 
   useEffect(() => {
-    if (gameState === "draw" || gameState === "win") {
+    if (gameState === "draw" || gameState === "win" || gameState === "disconnect" ) {
 
       navigate(`/numeris/rooms/${id}`, {
         state: { playerId: currentPlayer},
