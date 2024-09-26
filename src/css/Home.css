@@ -1,3 +1,58 @@
-.home-container{
-    background-color: white;
-}
+/* 特定のページ (home-page) にのみスタイルを適用する */
+#home-page {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  #home-page h1, #home-page h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  #home-page ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  #home-page li {
+    background-color: #fff;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #home-page button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  #home-page button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  #home-page button:hover:not(:disabled) {
+    background-color: #45a049;
+  }
+  
+  #home-page button:last-of-type {
+    display: block;
+    margin: 20px auto;
+    width: 100%;
+    font-size: 16px;
+  }
+  

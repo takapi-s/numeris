@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { get, ref, onValue, push, set, remove, runTransaction } from 'firebase/database';
 import { database } from '../firebaseConfig'; // Firebase設定ファイルからエクスポートされたdatabaseをインポート
 import { useNavigate } from 'react-router-dom';
+import "../css/Home.css"
 
 interface Room {
   name: string;
@@ -116,7 +117,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div>
+    <div id="home-page">
       <h1>Home</h1>
       <h2>Existing Rooms</h2>
       <ul>
@@ -129,7 +130,7 @@ const Home: React.FC = () => {
               {room.name} - Status: {room.gameState} ({playerCount}/4)
               <button
                 onClick={() => handleJoinRoom(roomId, push(ref(database, 'players')).key!)}
-                disabled={isJoining || isRoomFull || room.gameState !== "waiting"} // 非活性化フラグを追加
+                disabled={isJoining || isRoomFull || room.gameState !== "waiting"}
               >
                 {isRoomFull ? 'Room Full' : 'Join Room'}
               </button>
@@ -139,6 +140,7 @@ const Home: React.FC = () => {
       </ul>
       <button onClick={handleCreateRoom} disabled={isJoining}>Create New Room</button>
     </div>
+
   );
 };
 

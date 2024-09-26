@@ -1,4 +1,56 @@
-
-.room-container {
-    background-color: white;
-}
+/* #room-pageにのみスタイルを適用 */
+#room-page {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  #room-page h1, #room-page h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  #room-page ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+  }
+  
+  #room-page li {
+    background-color: #fff;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  #room-page button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+  }
+  
+  #room-page button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  #room-page button:hover:not(:disabled) {
+    background-color: #45a049;
+  }
+  
+  #room-page div {
+    text-align: center;
+    color: red;
+    margin-top: 20px;
+  }
+  

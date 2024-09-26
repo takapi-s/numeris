@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, onDisconnect } from 'firebase/database';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { database } from '../firebaseConfig';
+import "../css/Room.css"
 
 interface Player {
   name: string;
@@ -172,7 +173,7 @@ const Room: React.FC = () => {
   }
 
   return (
-    <div>
+    <div id="room-page">
       {room ? (
         <>
           <h1>{room?.name}</h1>
@@ -207,6 +208,7 @@ const Room: React.FC = () => {
         </div>
       )}
     </div>
+
   );
 };
 
