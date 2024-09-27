@@ -80,6 +80,7 @@ const Room: React.FC = () => {
         ? (Object.values(data.players) as Player[]).find((player: Player) => player.isOwner)
         : null;
 
+      //ここでルーム内で誰か退出したときの処理
       if (!currentOwner && playerId) {
         const remainingPlayers = data.players
           ? Object.entries(data.players).filter(([_, player]) => (player as Player).timestamp)
@@ -92,6 +93,8 @@ const Room: React.FC = () => {
 
           const newOwnerRef = ref(database, `rooms/${roomID}/players/${newOwner[0]}/isOwner`);
           await set(newOwnerRef, true);
+          const newRoomOwner = ref(database,  `rooms/${roomID}/owner`);
+          await set(newRoomOwner, newOwner[0]);
         }
       }
 
