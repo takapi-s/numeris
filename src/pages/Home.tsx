@@ -117,9 +117,9 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div id="home-page">
+    <div id="home-page" style={{ width: "600px" }}>
       <h1>Home</h1>
-      <h2>Existing Rooms</h2>
+      <h2>Room List</h2>
       <ul>
         {rooms && Object.entries(rooms)
           .sort(([roomIdA, roomA], [roomIdB, roomB]) => {
@@ -127,12 +127,12 @@ const Home: React.FC = () => {
             const playerCountA = roomA.players ? Object.keys(roomA.players).length : 0;
             const isRoomFullA = playerCountA === 4;
             const isDisabledA = isJoining || isRoomFullA || roomA.gameState !== "waiting";
-            
+
             // Compute disabled state for roomB
             const playerCountB = roomB.players ? Object.keys(roomB.players).length : 0;
             const isRoomFullB = playerCountB === 4;
             const isDisabledB = isJoining || isRoomFullB || roomB.gameState !== "waiting";
-            
+
             // Sort rooms: enabled buttons first
             if (isDisabledA === isDisabledB) return 0;
             return isDisabledA ? 1 : -1;
@@ -141,11 +141,21 @@ const Home: React.FC = () => {
             const playerCount = room.players ? Object.keys(room.players).length : 0;
             const isRoomFull = playerCount === 4;
             const isDisabled = isJoining || isRoomFull || room.gameState !== "waiting";
-            
+
             return (
-              <li key={roomId}>
-                {room.name} - Status: {room.gameState} ({playerCount}/4)
+              <li key={roomId} className='ROOM'>
+                <div>
+                  <p>
+                    ID: {room.name}
+                  </p>
+                  <p>
+                    Status: {room.gameState} ({playerCount}/4)
+                  </p>
+                </div>
+
                 <button
+                  className='joinButton'
+                  style={{ width: "150px" }} 
                   onClick={() => handleJoinRoom(roomId, push(ref(database, 'players')).key!)}
                   disabled={isDisabled}
                 >
@@ -158,7 +168,7 @@ const Home: React.FC = () => {
       <button onClick={handleCreateRoom} disabled={isJoining}>Create New Room</button>
     </div>
   );
-  
+
 };
 
 export default Home;

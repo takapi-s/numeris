@@ -176,8 +176,8 @@ const Room: React.FC = () => {
     <div id="room-page">
       {room ? (
         <>
-          <h1>{room?.name}</h1>
-          <h2>Players:</h2>
+          <h1>ID : {room?.name}</h1>
+          <h2>Players List</h2>
           <ul>
             {room.players && Object.entries(room.players).map(([key, player]) => {
               const typedPlayer = player as Player;
@@ -188,15 +188,18 @@ const Room: React.FC = () => {
               );
             })}
           </ul>
-          {room?.players[playerId]?.isOwner && (
-            <button onClick={handleStartGame} disabled={Object.keys(room.players).length < 2}>
-              Start Game
-            </button>
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {room?.players[playerId]?.isOwner && (
+              <button onClick={handleStartGame} disabled={Object.keys(room.players).length < 2}>
+                Start Game
+              </button>
+            )}
 
-          <button onClick={handleExitRoom} disabled={!canExit}>
-            {canExit ? 'Exit Room' : `Exit Room (${countdown} seconds remaining)`}
-          </button>
+            <button onClick={handleExitRoom} disabled={!canExit}>
+              {canExit ? 'Exit Room' : `Exit Room (${countdown} seconds remaining)`}
+            </button>
+          </div>
+
         </>
       ) : (
         <div>Room information is not available</div>

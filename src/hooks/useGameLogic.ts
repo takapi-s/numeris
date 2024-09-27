@@ -172,6 +172,43 @@ const useGameLogic = (id: string | undefined, currentPlayer: string | null) => {
   }, [selectedCards, selectN, id, currentPlayer]);
 
   useEffect(() => {
+    if (!id || !currentPlayer) return;
+  
+    const roomRef = ref(database, `rooms/${id}`);
+    const unsubscribe = onValue(roomRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // プレイヤーデータが存在しない場合にHomeに戻る
+        if (!data.players || !data.players[currentPlayer]) {
+          console.log("Player data not found, redirecting to Home");
+          navigate("/numeris");
+          return;
+        }
+  
+        // プレイヤーの手札をセット
+        if (data.players[currentPlayer]) {
+          setHand(data.players[currentPlayer].hand || []);
+        }
+  
+        const opponentData: Record<string, number> = {};
+        route.forEach((player) => {
+          if (player !== currentPlayer && data.players[player]) {
+            opponentData[player] = data.players[player].hand
+              ? data.players[player].hand.length
+              : 0;
+          }
+        });
+  
+        setOpponentHands(opponentData);
+        setDeckCount(data.deck ? data.deck.length : 0);
+      }
+    });
+  
+    return () => unsubscribe();
+  }, [id, currentPlayer, route, navigate]);
+  
+
+  useEffect(() => {
     //selectModeがtrueになるとselectNを読み取り設定
     if (id && currentPlayer) {
       const roomRef = ref(

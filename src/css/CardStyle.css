@@ -1,6 +1,6 @@
 .card-button {
   background-size: cover;
-  aspect-ratio: 1/1.618;
+  aspect-ratio: 1/1.586;
   height: 80%;
   border: none; /* ここでボーダーを無効化 */
   outline: none; /* フォーカス時のアウトラインも消す場合はこちらを追加 */
@@ -18,15 +18,15 @@
   width: 40%;
   object-fit: contain; /* 縦横比を保持して画像を表示 */
   top: -3%;
-  left: -12%;
+  left: -10%;
 }
 
 .card-content .card-image {
   border: black;
   position: absolute;
   height: 92%;
-  top: 2.42%;
-  left: -1.5%;
+  top: 3.4%;
+  left: 0%;
 }
 
 .card-button.hover-effect:hover,

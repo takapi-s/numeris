@@ -9,7 +9,7 @@
     -50%
   ); /* 自身の幅と高さの50%を引いて、正確に中央に配置 */
   height: 80%;
-  aspect-ratio: 1/1.618;
+  aspect-ratio: 1/1.586;
   border: none;
   outline: none;
   background-color: transparent;
@@ -21,11 +21,11 @@
 }
 
 .card-graphic {
-  width: 92%;
+  width: 85%;
   object-fit: contain;
   position: absolute;
-  top: 2.5%;
-  left: 3.9%; 
+  top: 3.9%;
+  left: 7.3%; 
 }
 
 .card-value {
