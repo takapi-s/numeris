@@ -117,54 +117,63 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div id="home-page" style={{ width: "600px" }}>
-      <h1>Home</h1>
-      <h2>Room List</h2>
-      <ul>
-        {rooms && Object.entries(rooms)
-          .sort(([roomIdA, roomA], [roomIdB, roomB]) => {
-            // Compute disabled state for roomA
-            const playerCountA = roomA.players ? Object.keys(roomA.players).length : 0;
-            const isRoomFullA = playerCountA === 4;
-            const isDisabledA = isJoining || isRoomFullA || roomA.gameState !== "waiting";
+    <div id="home-page" className='HomePage'>
+      <div className='info'>
+        <button id='deck'>
+          deck
+        </button>
+        <h1>Home</h1>
+      </div>
+      <div className='RoomList'>
+        <h2>Room List</h2>
+        <ul>
+          {rooms && Object.entries(rooms)
+            .sort(([roomIdA, roomA], [roomIdB, roomB]) => {
+              // Compute disabled state for roomA
+              const playerCountA = roomA.players ? Object.keys(roomA.players).length : 0;
+              const isRoomFullA = playerCountA === 4;
+              const isDisabledA = isJoining || isRoomFullA || roomA.gameState !== "waiting";
 
-            // Compute disabled state for roomB
-            const playerCountB = roomB.players ? Object.keys(roomB.players).length : 0;
-            const isRoomFullB = playerCountB === 4;
-            const isDisabledB = isJoining || isRoomFullB || roomB.gameState !== "waiting";
+              // Compute disabled state for roomB
+              const playerCountB = roomB.players ? Object.keys(roomB.players).length : 0;
+              const isRoomFullB = playerCountB === 4;
+              const isDisabledB = isJoining || isRoomFullB || roomB.gameState !== "waiting";
 
-            // Sort rooms: enabled buttons first
-            if (isDisabledA === isDisabledB) return 0;
-            return isDisabledA ? 1 : -1;
-          })
-          .map(([roomId, room]) => {
-            const playerCount = room.players ? Object.keys(room.players).length : 0;
-            const isRoomFull = playerCount === 4;
-            const isDisabled = isJoining || isRoomFull || room.gameState !== "waiting";
+              // Sort rooms: enabled buttons first
+              if (isDisabledA === isDisabledB) return 0;
+              return isDisabledA ? 1 : -1;
+            })
+            .map(([roomId, room]) => {
+              const playerCount = room.players ? Object.keys(room.players).length : 0;
+              const isRoomFull = playerCount === 4;
+              const isDisabled = isJoining || isRoomFull || room.gameState !== "waiting";
 
-            return (
-              <li key={roomId} className='ROOM'>
-                <div>
-                  <p>
-                    ID: {room.name}
-                  </p>
-                  <p>
-                    Status: {room.gameState} ({playerCount}/4)
-                  </p>
-                </div>
+              return (
+                <li key={roomId} className='ROOM'>
+                  <div>
+                    <p>
+                      ID: {room.name}
+                    </p>
+                    <p>
+                      Status: {room.gameState} ({playerCount}/4)
+                    </p>
+                  </div>
 
-                <button
-                  className='joinButton'
-                  style={{ width: "150px" }} 
-                  onClick={() => handleJoinRoom(roomId, push(ref(database, 'players')).key!)}
-                  disabled={isDisabled}
-                >
-                  {isRoomFull ? 'Room Full' : 'Join Room'}
-                </button>
-              </li>
-            );
-          })}
-      </ul>
+                  <button
+                    className='joinButton'
+                    onClick={() => handleJoinRoom(roomId, push(ref(database, 'players')).key!)}
+                    disabled={isDisabled}
+                  >
+                    {isRoomFull ? 'Room Full' : 'Join Room'}
+                  </button>
+                </li>
+              );
+            })}
+        </ul>
+
+
+      </div>
+
       <button onClick={handleCreateRoom} disabled={isJoining}>Create New Room</button>
     </div>
   );

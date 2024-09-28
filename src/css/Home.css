@@ -1,5 +1,11 @@
 /* 特定のページ (home-page) にのみスタイルを適用する */
+
+.HomePage {
+  width: 55%;
+}
+
 #home-page {
+  min-width: 600px;
   padding: 20px;
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -7,6 +13,27 @@
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+
+.info {
+  position: relative;
+  height: 100px; /* 親コンテナの高さを設定 */
+}
+
+#deck {
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transform: translateY(-50%); /* 縦方向に中央に配置 */
+}
+
+#home-page h1 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* 完全に中央に配置 */
+}
+
 
 
 #home-page h1,
@@ -36,7 +63,6 @@
 }
 
 #home-page .joinButton {
-  width: 150px;
   background-color: #4caf50;
   color: white;
   padding: 10px 20px;
@@ -71,6 +97,5 @@
 #home-page button:last-of-type {
   display: block;
   margin: 20px auto;
-  width: 100%;
   font-size: 16px;
 }

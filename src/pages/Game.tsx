@@ -123,7 +123,7 @@ const Game: React.FC = () => {
       </div>
 
       <div className="timer">
-        <p>Time Remaining: {currentPlayer === currentTurn ? `${timer} seconds` : "Waiting for your turn"}</p>
+        <p>{currentPlayer === currentTurn ? `残り${timer} 秒` : "相手のターン"}</p>
       </div>
       <div className="myHand">
         <ul>
