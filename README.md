@@ -23,7 +23,7 @@ Numeris
 
 ## プロジェクトについて
 
-簡単なカードゲーム
+Unoみたいなゲームを作った
 
 ## 環境
 
@@ -31,10 +31,11 @@ Numeris
 
 | 言語・フレームワーク  | バージョン |
 | --------------------- | ---------- |
+| npm                   | 10.8.3     |
 | React                 | 18.3.1     |
 | typescript            | 4.9.5      |
 
-その他のパッケージのバージョンは package.json を参照してください
+firebaseの設定ファイルである.envファイルを追加する必要がある
 
 ## URL
 [WebGame](https://takapi-s.github.io/numeris/)
