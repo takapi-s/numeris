@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { get, ref, onValue, push, set, remove, runTransaction } from 'firebase/database';
-import { database } from '../firebaseConfig'; // Firebase設定ファイルからエクスポートされたdatabaseをインポート
+import { database } from '../firebaseConfig';
 import { useNavigate } from 'react-router-dom';
 import "../css/Home.css"
+import DeckDialog from '../components/DeckDialog';// デッキダイアログのインポート
 
 interface Room {
   name: string;
@@ -14,7 +15,8 @@ interface Room {
 
 const Home: React.FC = () => {
   const [rooms, setRooms] = useState<Record<string, Room>>({});
-  const [isJoining, setIsJoining] = useState(false); // join中かどうかの状態を追加
+  const [isJoining, setIsJoining] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // ダイアログの表示状態を管理
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,9 +30,9 @@ const Home: React.FC = () => {
             const roomRef = ref(database, `rooms/${roomId}`);
             runTransaction(roomRef, (currentRoom) => {
               if (currentRoom && (!currentRoom.players || Object.keys(currentRoom.players).length === 0)) {
-                return null; // ルームを削除する
+                return null;
               }
-              return currentRoom; // ルームを削除しない
+              return currentRoom;
             })
               .then(() => {
                 console.log(`Room ${roomId} deleted due to no players.`);
@@ -39,7 +41,7 @@ const Home: React.FC = () => {
                 console.error(`Failed to delete room ${roomId}: `, error);
               });
 
-            delete updatedRooms[roomId]; // ローカル状態からも削除
+            delete updatedRooms[roomId];
           }
         });
         setRooms(updatedRooms);
@@ -50,7 +52,7 @@ const Home: React.FC = () => {
   }, []);
 
   const handleJoinRoom = (roomId: string, playerId: string) => {
-    setIsJoining(true); // すべてのボタンを非活性化
+    setIsJoining(true);
     console.log(`Joining room: ${roomId}`);
 
     const roomRef = ref(database, `rooms/${roomId}`);
@@ -64,82 +66,86 @@ const Home: React.FC = () => {
 
         currentRoom.players[playerId] = {
           name: playerId,
-          isOwner: playerCount === 0 // 最初のプレイヤーはオーナー
+          isOwner: playerCount === 0
         };
 
         if (playerCount === 0) {
-          currentRoom.owner = playerId; // 最初のプレイヤーをオーナーにする
+          currentRoom.owner = playerId;
         }
       }
 
       return currentRoom;
     }).then(() => {
-      // プレイヤーをルームに追加後、ルーム画面に移動
       navigate(`/numeris/rooms/${roomId}`, {
         state: { playerId: playerId },
       });
     }).catch((error) => {
       console.error(error);
-      setIsJoining(false); // エラー発生時に再度ボタンを押せるようにする
+      setIsJoining(false);
     });
   };
 
   const handleCreateRoom = () => {
-    setIsJoining(true); // すべてのボタンを非活性化
+    setIsJoining(true);
     const newRoomRef = push(ref(database, 'rooms'));
     const roomId = newRoomRef.key;
-    const playerId = push(ref(database, 'players')).key; // 自分のplayerIdを生成
+    const playerId = push(ref(database, 'players')).key;
 
     if (roomId && playerId) {
       const newRoom: Room = {
         name: roomId,
         gameState: 'waiting',
-        owner: playerId, // 自分をオーナーに設定
+        owner: playerId,
         players: {
           [playerId]: {
             name: playerId,
-            isOwner: true // 自分をオーナーとして設定
+            isOwner: true
           }
         },
-        timestamp: Date.now(), // タイムスタンプを追加
+        timestamp: Date.now(),
       };
 
       set(newRoomRef, newRoom).then(() => {
-        // ルーム作成後、ルーム画面に移動
         navigate(`/numeris/rooms/${roomId}`, {
           state: { playerId: playerId },
         });
       }).catch((error) => {
         console.error(error);
-        setIsJoining(false); // エラー発生時に再度ボタンを押せるようにする
+        setIsJoining(false);
       });
     }
+  };
+
+  const openDialog = () => {
+    setIsDialogOpen(true); // ダイアログを開く
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false); // ダイアログを閉じる
   };
 
   return (
     <div id="home-page" className='HomePage'>
       <div className='info'>
-        <button id='deck'>
+        <button id='deck' onClick={openDialog}>
           deck
         </button>
         <h1>Home</h1>
       </div>
+      <DeckDialog isOpen={isDialogOpen} onClose={closeDialog} /> {/* ダイアログを表示 */}
       <div className='RoomList'>
         <h2>Room List</h2>
         <ul>
           {rooms && Object.entries(rooms)
             .sort(([roomIdA, roomA], [roomIdB, roomB]) => {
-              // Compute disabled state for roomA
               const playerCountA = roomA.players ? Object.keys(roomA.players).length : 0;
               const isRoomFullA = playerCountA === 4;
               const isDisabledA = isJoining || isRoomFullA || roomA.gameState !== "waiting";
 
-              // Compute disabled state for roomB
               const playerCountB = roomB.players ? Object.keys(roomB.players).length : 0;
               const isRoomFullB = playerCountB === 4;
               const isDisabledB = isJoining || isRoomFullB || roomB.gameState !== "waiting";
 
-              // Sort rooms: enabled buttons first
               if (isDisabledA === isDisabledB) return 0;
               return isDisabledA ? 1 : -1;
             })
@@ -151,12 +157,8 @@ const Home: React.FC = () => {
               return (
                 <li key={roomId} className='ROOM'>
                   <div>
-                    <p>
-                      ID: {room.name}
-                    </p>
-                    <p>
-                      Status: {room.gameState} ({playerCount}/4)
-                    </p>
+                    <p>ID: {room.name}</p>
+                    <p>Status: {room.gameState} ({playerCount}/4)</p>
                   </div>
 
                   <button
@@ -170,14 +172,10 @@ const Home: React.FC = () => {
               );
             })}
         </ul>
-
-
       </div>
-
       <button onClick={handleCreateRoom} disabled={isJoining}>Create New Room</button>
     </div>
   );
-
 };
 
 export default Home;
