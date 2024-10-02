@@ -25,6 +25,9 @@ Numeris
 
 Unoみたいなゲームを作った
 
+![alt text](image.png)
+
+
 ## 環境
 
 <!-- 言語、フレームワーク、ミドルウェア、インフラの一覧とバージョンを記載 -->
@@ -36,7 +39,6 @@ Unoみたいなゲームを作った
 | typescript            | 4.9.5      |
 
 firebaseの設定ファイルである.envファイルを追加する必要がある
-
 ## URL
 [WebGame](https://takapi-s.github.io/numeris/)
 
