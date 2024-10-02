@@ -18,15 +18,15 @@
   width: 40%;
   object-fit: contain; /* 縦横比を保持して画像を表示 */
   top: -3%;
-  left: -10%;
+  left: -8%;
 }
 
 .card-content .card-image {
   border: black;
   position: absolute;
   height: 92%;
-  top: 3.4%;
-  left: 0%;
+  top: 4%;
+  left: 4%;
 }
 
 .card-button.hover-effect:hover,
