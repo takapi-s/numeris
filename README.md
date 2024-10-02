@@ -25,8 +25,11 @@ Numeris
 
 Unoみたいなゲームを作った
 
-![alt text](image.png)
+![alt text](image-2.png)
 
+### Unoとの違い
+　カードの持つ能力の幅広さ
+![alt text](image-1.png)
 
 ## 環境
 
@@ -34,7 +37,6 @@ Unoみたいなゲームを作った
 
 | 言語・フレームワーク  | バージョン |
 | --------------------- | ---------- |
-| npm                   | 10.8.3     |
 | React                 | 18.3.1     |
 | typescript            | 4.9.5      |
 
