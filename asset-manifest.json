@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/numeris/static/css/main.c01dfaca.css",
-    "main.js": "/numeris/static/js/main.b30acc4e.js",
+    "main.js": "/numeris/static/js/main.ddc132a3.js",
     "static/js/453.4dfacea0.chunk.js": "/numeris/static/js/453.4dfacea0.chunk.js",
     "static/media/deck.png": "/numeris/static/media/deck.421354ffb9ce69bacebb.png",
     "static/media/back-ground.png": "/numeris/static/media/back-ground.69fc768caa675de93068.png",
@@ -10,11 +10,11 @@
     "static/media/redcard.png": "/numeris/static/media/redcard.78d1ecdf3b09591d6f24.png",
     "index.html": "/numeris/index.html",
     "main.c01dfaca.css.map": "/numeris/static/css/main.c01dfaca.css.map",
-    "main.b30acc4e.js.map": "/numeris/static/js/main.b30acc4e.js.map",
+    "main.ddc132a3.js.map": "/numeris/static/js/main.ddc132a3.js.map",
     "453.4dfacea0.chunk.js.map": "/numeris/static/js/453.4dfacea0.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c01dfaca.css",
-    "static/js/main.b30acc4e.js"
+    "static/js/main.ddc132a3.js"
   ]
 }
