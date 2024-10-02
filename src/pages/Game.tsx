@@ -3,9 +3,9 @@ import { useLocation, useParams } from "react-router-dom";
 import useGameLogic from "../hooks/useGameLogic";
 import "../css/Game.css";
 import CardButton from "../components/CardButton";
-import StageCard from "../components/StageCard";
 import "../css/OpponentHand.css"
 import React, { useState, useEffect } from "react";
+import CardContent from "../components/CardContent";
 
 const Game: React.FC = () => {
   const { roomID } = useParams<{ roomID: string }>();
@@ -104,7 +104,7 @@ const Game: React.FC = () => {
 
         {/* <p className="Deck Count">Remaining Deck: {deckCount} cards</p> */}
         <div className="pile">
-          <p>Discard Pile: {discardPile.length} cards</p>
+          <p>墓地 {discardPile.length}枚</p>
         </div>
 
         <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}
@@ -119,7 +119,7 @@ const Game: React.FC = () => {
 
         <div className="StageCard">
 
-          <StageCard card={stageCard} />
+          <CardContent card={stageCard}/>
 
         </div>
 

@@ -1,20 +1,6 @@
 import React from 'react';
 import "../css/CardStyle.css";
-
-export type Card = {
-  id: number;
-  color: string;
-  number: number;
-  ability?: Ability;
-};
-
-export type Ability = {
-  name: string;
-  title: string;
-  playAbility?: string;
-  traitAbility?: string;
-  number: number;
-};
+import CardContent, { Card} from './CardContent';
 
 
 
@@ -72,8 +58,7 @@ const CardButton: React.FC<CardButtonProps> = ({
         onMouseOut={handleMouseOut}
         onClick={() => selectMode ? toggleCardSelection(card) : card && playCard(card)}
         className={
-          `card-button ${card?.color || ''} 
-      ${card?.ability?.name || ''} 
+          `card-button 
       ${selectMode ? 'select-mode' : ''} 
       ${selectedCards.some((c) => c.id === card.id) ? 'selected' : ''} 
       ${(currentPlayer === currentTurn && card && stageCard && isPlayable(card, stageCard) && !playFlag) ? 'hover-effect' : ''} 
@@ -88,11 +73,8 @@ const CardButton: React.FC<CardButtonProps> = ({
           )
         }
       >
-        <div className="card-content">
-          <img src={`${process.env.PUBLIC_URL}/numbers/${card.number}.png`} className='card-number' />
+        <CardContent card={card} />
 
-          <img src={`${process.env.PUBLIC_URL}/ability_icon/${card.ability?.name}.png`} alt={`Card image for ${card.number}`} className="card-image" />
-        </div>
       </button>
     </li>
 

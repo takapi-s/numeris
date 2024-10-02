@@ -4,7 +4,7 @@ import { ref, onDisconnect, update, onValue, get } from "firebase/database";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
 import { triggerPlayAbility } from "./abilities";
-import { Card, Ability } from "../components/CardButton";
+import { Card, Ability } from "../components/CardContent";
 
 
 const loadAbilitiesFromCSV = async (filePath: string): Promise<Ability[]> => {
@@ -52,7 +52,7 @@ export const shuffle = (array: any[]) => {
   return array;
 };
 
-const createDeck = async () => {
+export const createDeck = async () => {
   const colors = ["red", "green", "blue"];
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const deck: Card[] = [];

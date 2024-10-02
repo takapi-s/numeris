@@ -1,37 +1,18 @@
 .card-button {
-  background-size: cover;
-  aspect-ratio: 1/1.586;
-  height: 80%;
+  width: 100%;
+  height: 100%;
   border: none; /* ここでボーダーを無効化 */
   outline: none; /* フォーカス時のアウトラインも消す場合はこちらを追加 */
   background-color: transparent; /* 背景色を透過に設定 */
+  padding: 0px;
 }
 
-.card-button .card-content {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
 
-.card-content .card-number {
-  position: absolute;
-  width: 40%;
-  object-fit: contain; /* 縦横比を保持して画像を表示 */
-  top: -3%;
-  left: -8%;
-}
-
-.card-content .card-image {
-  border: black;
-  position: absolute;
-  height: 92%;
-  top: 4%;
-  left: 4%;
-}
 
 .card-button.hover-effect:hover,
 .card-button.not-your-turn:hover {
   transform: scale(1.25);
+  
 }
 
 
@@ -39,20 +20,6 @@
   opacity: 0.5;
   cursor: not-allowed;
   background-blend-mode: multiply; /* 背景画像とオーバーレイをブレンド */
-}
-
-
-/* 色ごとのスタイル */
-.card-button.red {
-  background-image: url("/public/card_graphic/redcard.png");
-}
-
-.card-button.blue {
-  background-image: url("/public/card_graphic/bluecard.png");
-}
-
-.card-button.green {
-  background-image: url("/public/card_graphic/greencard.png");
 }
 
 /* 選択モード時の追加スタイル */

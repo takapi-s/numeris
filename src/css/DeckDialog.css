@@ -1,20 +1,56 @@
-
 .dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .dialog-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7); /* 背景の透明度を上げ、フォーカスを強調 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* 他の要素の上に表示する */
+  transition: opacity 0.3s ease; /* スムーズなフェードイン/アウト効果 */
+  opacity: 1;
+}
+
+.dialog-content {
+  background-color: white;
+  padding: 30px; /* パディングを少し大きくして内容をより見やすく */
+  border-radius: 10px; /* 角丸をやや大きくしてモダンなデザイン */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3); /* 影を少し強調して浮き上がる効果 */
+  max-width: 90%; /* スマホでも見やすくするため最大幅を設定 */
+  max-height: 90%; /* 画面に収まるように高さを制限 */
+  overflow-y: auto; /* 内容が多い場合でもスクロール可能にする */
+  animation: fadeIn 0.3s ease; /* 開くときのアニメーション効果 */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 中央揃え */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.deck-list {
+  display: grid; /* グリッドレイアウトを使用 */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* カードを自動調整して並べる */
+  gap: 20px; /* カード間のスペース */
+  padding: 20px;
+  width: 100%; /* グリッド全体をコンテンツ幅に合わせる */
+  box-sizing: border-box;
+}
+
+.deckCard {
+  margin-bottom: 10px; /* カード間に少しスペースを追加 */
+  padding: 10px;
+  background-color: #f9f9f9; /* カードの背景色を微妙に変えて視覚的に区別 */
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 小さな影を追加 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deckCard:hover {
+  transform: translateY(-4px); /* ホバー時に少し浮かせる効果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ホバー時の影を強調 */
+}

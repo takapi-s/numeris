@@ -23,13 +23,9 @@
 
 
 .StageCard {
-  position: absolute;
-  top: 50%; /* 親要素の高さの50% */
-  left: 50%; /* 親要素の幅の50% */
-  transform: translate(-50%, -50%); /* 自身の幅と高さの50%を引いて、正確に中央に配置 */
+  aspect-ratio: 1/1.586;
   height: 40%;
-  width: 40%;
-
+  width: auto;
 }
 
 
@@ -38,9 +34,9 @@
 .game-container .myHand {
   position: absolute;
   top: 70%;
-  left: 10%;  
+  left: 0%;  
   height: 30%;
-  width: 80%;
+  width: 100%;
   display: flex;
   justify-content: center;
   overflow-x: auto;
@@ -57,12 +53,12 @@
 
 
 .game-container .myHand ul {
+  width: 100%;
   display: inline-flex;
   justify-content: center;
   align-items: center;
   list-style-type: none;
   padding: 0;
-  margin: 0;
 }
 
 .game-container .myHand li {  
@@ -70,8 +66,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: -3%;
-  height: 100%;
+  aspect-ratio: 1/1.586;
+  width: auto;
+  height: 80%;
+  min-width: 0;
+  margin-right: -2%;
+  /* ホバー時アニメーション */
+  transition-property: flex-shrink, translate;
+  transition-duration: 0.2s;
+  /* ホバーしたカードが前面に出ないようにする */
+  isolation: isolate;
 }
 
 .game-container .myHand li:nth-child(n) {

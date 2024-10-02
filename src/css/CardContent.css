@@ -1,0 +1,39 @@
+.card-content {
+    aspect-ratio: 1/1.586;
+    background-size: cover;
+    position: relative;
+    height: auto; /* 高さは自動調整 */
+    max-height: 100%; /* 短い方に合わせる */
+    max-width: 100%; /* 短い方に合わせる */
+}
+
+.card-content .card-number {
+    position: absolute;
+    width: 40%;
+    object-fit: contain;
+    /* 縦横比を保持して画像を表示 */
+    top: -3%;
+    left: -6%;
+}
+
+.card-content .card-image {
+    border: black;
+    position: absolute;
+    height: 92%;
+    top: 4%;
+    left: 7%;
+}
+
+
+/* 色ごとのスタイル */
+.card-content.red {
+    background-image: url("/public/card_graphic/redcard.png");
+}
+
+.card-content.blue {
+    background-image: url("/public/card_graphic/bluecard.png");
+}
+
+.card-content.green {
+    background-image: url("/public/card_graphic/greencard.png");
+}

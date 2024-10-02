@@ -1,10 +1,8 @@
 // /hooks/abilities.ts
 import { shuffle} from "./useGameLogic";
-import { Card } from "../components/CardButton";
+import { Card } from "../components/CardContent";
 import { database } from "../firebaseConfig";
 import { get, onValue, ref, update } from "firebase/database";
-import { reverse } from "dns";
-import Room from "../pages/Room";
 
 export const triggerPlayAbility = async (
   card: Card,
