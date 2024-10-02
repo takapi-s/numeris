@@ -196,15 +196,18 @@ const forceDrawCards = async (
 
   if (!data) return;
 
+  // デッキとプレイヤーの手札を取得
   let newDeck = [...data.deck];
   let playerHand = [...(data.players[player].hand || [])];
+  // discardPileがundefinedの場合は空配列にする
+  let discardPile = [...(data.discardPile || [])];
 
   for (let i = 0; i < count; i++) {
     if (newDeck.length === 0) {
-      if (data.discardPile.length > 0) {
+      if (discardPile.length > 0) {
         // 捨て札からデッキを再構築してシャッフル
-        newDeck = shuffle([...data.discardPile]);
-        data.discardPile = []; // 捨て札をクリア
+        newDeck = shuffle([...discardPile]);
+        discardPile = []; // 捨て札をクリア
         await update(ref(database), {
           [`rooms/${roomId}/deck`]: newDeck,
           [`rooms/${roomId}/discardPile`]: [],
@@ -226,10 +229,12 @@ const forceDrawCards = async (
   const updates: Record<string, any> = {};
   updates[`rooms/${roomId}/players/${player}/hand`] = playerHand;
   updates[`rooms/${roomId}/deck`] = newDeck;
-  updates[`rooms/${roomId}/discardPile`] = data.discardPile;
+  // discardPileも更新するが、必ず空配列または配列として渡す
+  updates[`rooms/${roomId}/discardPile`] = discardPile;
 
   await update(ref(database), updates);
 };
+
 
 const reverseAbility = async (roomId: string, data: any) => {
   const route = [...data.route].reverse();
