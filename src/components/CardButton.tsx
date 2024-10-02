@@ -6,7 +6,6 @@ export type Card = {
   color: string;
   number: number;
   ability?: Ability;
-  URL?: String;
 };
 
 export type Ability = {

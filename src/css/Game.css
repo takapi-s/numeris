@@ -1,3 +1,7 @@
+.center {
+  display:flex; justify-content: center; align-items: center;
+}
+
 .game-container {
   background-size: cover;
   background-position: top center; /* 画像を上中央に配置する */

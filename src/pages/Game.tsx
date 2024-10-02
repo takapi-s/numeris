@@ -59,95 +59,98 @@ const Game: React.FC = () => {
   }, [route, currentPlayer, initialOrder]);
 
   return (
-    <div className="game-container">
+    <div className="center">
+      <div className="game-container">
 
-<div className="opponentHand">
-  <ul
-    className={
-      rotatedRoute.length === 1
-        ? "position-one"
-        : rotatedRoute.length === 2
-          ? "position-two"
-          : rotatedRoute.length === 3
-            ? "position-three"
-            : "position-default"
-    }
-  >
-    {rotatedRoute.map((player, index) => (
-      player !== currentPlayer && (
-        <li
-          key={index}
-          className={`opponent-position-${index} ${player === currentTurn ? 'enemy-turn' : ''}`}
+        <div className="opponentHand">
+          <ul
+            className={
+              rotatedRoute.length === 1
+                ? "position-one"
+                : rotatedRoute.length === 2
+                  ? "position-two"
+                  : rotatedRoute.length === 3
+                    ? "position-three"
+                    : "position-default"
+            }
+          >
+            {rotatedRoute.map((player, index) => (
+              player !== currentPlayer && (
+                <li
+                  key={index}
+                  className={`opponent-position-${index} ${player === currentTurn ? 'enemy-turn' : ''}`}
+                >
+                  <span className="handNum">{player} : {opponentHands[player]}</span>
+                  <div className="opponentHandContainer">
+                    {Array.from({ length: Math.min(opponentHands[player], 8) }).map((_, imgIndex) => (
+                      <img
+                        key={imgIndex}
+                        className="backcard"
+                        src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
+                        alt="Card"
+                        style={{ width: '20px', height: '30px', marginLeft: '2px' }}
+                      />
+                    ))}
+                  </div>
+                </li>
+              )
+            ))}
+          </ul>
+        </div>
+
+
+
+
+
+        {/* <p className="Deck Count">Remaining Deck: {deckCount} cards</p> */}
+        <div className="pile">
+          <p>Discard Pile: {discardPile.length} cards</p>
+        </div>
+
+        <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}
+          className="Deck"
         >
-          <span className="handNum">{player} : {opponentHands[player]}</span>
-          <div className="opponentHandContainer">
-            {Array.from({ length: Math.min(opponentHands[player], 8) }).map((_, imgIndex) => (
-              <img
-                key={imgIndex}
-                className="backcard"
-                src={`${process.env.PUBLIC_URL}/card_graphic/backcard.png`}
-                alt="Card"
-                style={{ width: '20px', height: '30px', marginLeft: '2px' }}
+          {deckCount}
+        </button>
+
+        <button onClick={passTurn} disabled={currentPlayer !== currentTurn || !hasDrawn} className="passButton">
+          Pass
+        </button>
+
+        <div className="StageCard">
+
+          <StageCard card={stageCard} />
+
+        </div>
+
+        <div className="timer">
+          <p>{currentPlayer === currentTurn ? `残り${timer} 秒` : "相手のターン"}</p>
+        </div>
+        <div className="myHand">
+          <ul>
+            {hand.map((card, index) => (
+              <CardButton
+                key={card.id}
+                card={card}
+                selectMode={selectMode}
+                selectedCards={selectedCards}
+                toggleCardSelection={toggleCardSelection}
+                playCard={playCard}
+                currentPlayer={currentPlayer}
+                currentTurn={currentTurn}
+                isPlayable={isPlayable}
+                stageCard={stageCard}
+                playFlag={playFlag}
+                index={index}
+                totalCards={hand.length}
               />
             ))}
-          </div>
-        </li>
-      )
-    ))}
-  </ul>
-</div>
+          </ul>
 
-
-
-
-
-      {/* <p className="Deck Count">Remaining Deck: {deckCount} cards</p> */}
-      <div className="pile">
-        <p>Discard Pile: {discardPile.length} cards</p>
-      </div>
-
-      <button onClick={drawCard} disabled={currentPlayer !== currentTurn || hasDrawn}
-        className="Deck"
-      >
-        {deckCount}
-      </button>
-
-      <button onClick={passTurn} disabled={currentPlayer !== currentTurn || !hasDrawn} className="passButton">
-        Pass
-      </button>
-
-      <div className="StageCard">
-
-        <StageCard card={stageCard} />
-
-      </div>
-
-      <div className="timer">
-        <p>{currentPlayer === currentTurn ? `残り${timer} 秒` : "相手のターン"}</p>
-      </div>
-      <div className="myHand">
-        <ul>
-          {hand.map((card, index) => (
-            <CardButton
-              key={card.id}
-              card={card}
-              selectMode={selectMode}
-              selectedCards={selectedCards}
-              toggleCardSelection={toggleCardSelection}
-              playCard={playCard}
-              currentPlayer={currentPlayer}
-              currentTurn={currentTurn}
-              isPlayable={isPlayable}
-              stageCard={stageCard}
-              playFlag={playFlag}
-              index={index}
-              totalCards={hand.length}
-            />
-          ))}
-        </ul>
-
+        </div>
       </div>
     </div>
+
   );
 };
 

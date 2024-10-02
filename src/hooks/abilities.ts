@@ -87,8 +87,7 @@ export const triggerPlayAbility = async (
       break;
 
     case "curse":
-      const selectCards =  await selectCardsFromMyHand(roomId, currentPlayer, 1);
-      await curseAbility(roomId, currentPlayer, card, selectCards);
+      await changeAbilityName(roomId, currentPlayer, "curse", await selectCardsFromMyHand(roomId, currentPlayer, 1));
       break;
     
     case "Uno":
@@ -103,6 +102,14 @@ export const triggerPlayAbility = async (
       await refresh(roomId, currentPlayer);
       break;
 
+    case "prism":
+      await changeAbilityName(roomId, currentPlayer, "rainbow", await selectCardsFromMyHand(roomId, currentPlayer, 1));
+      break;
+
+    case "rebuild":
+      await discardAbility(await selectCardsFromMyHand(roomId, currentPlayer, 2), currentPlayer, roomId);
+      await forceDrawCards(roomId, currentPlayer, 2);
+      break;
 
 
     default:
@@ -112,6 +119,10 @@ export const triggerPlayAbility = async (
   // アビリティ発動後のタイマーリセット
   setTimer(20);
 };
+
+
+
+
 
 //全員か一人かで処理が違うカード選択
 //selectModeをtrueに書き換えてfalseになるのを待つ
@@ -443,44 +454,44 @@ const lightningAbility = async (roomId: string) => {
 };
 
 
-const curseAbility = async (
-  roomId: string,
-  currentPlayer: string,
-  playCard: Card,
-  selectedCards: Card[]
-) => {
-  // Firebase からルームのデータを取得
-  const roomRef = ref(database, `rooms/${roomId}`);
-  const snapshot = await get(roomRef);
-  const data = snapshot.val();
+// const curseAbility = async (
+//   roomId: string,
+//   currentPlayer: string,
+//   playCard: Card,
+//   selectedCards: Card[]
+// ) => {
+//   // Firebase からルームのデータを取得
+//   const roomRef = ref(database, `rooms/${roomId}`);
+//   const snapshot = await get(roomRef);
+//   const data = snapshot.val();
 
-  if (!data) return;
+//   if (!data) return;
 
-  const curse = playCard.ability;
+//   const curse = playCard.ability;
 
 
-  // 選択したカードのアビリティをcurseにコピー
-  let currentPlayerHand = data.players[currentPlayer]?.hand ? [...data.players[currentPlayer].hand] : [];
+//   // 選択したカードのアビリティをcurseにコピー
+//   let currentPlayerHand = data.players[currentPlayer]?.hand ? [...data.players[currentPlayer].hand] : [];
 
   
 
-  currentPlayerHand = currentPlayerHand.map(card => {
-    if (selectedCards.some(selectedCard => selectedCard.id === card.id)) {
-      return {
-        ...card,
-        ability: curse // コピーされたcurseアビリティ
-      };
-    }
-    return card;
-  });
+//   currentPlayerHand = currentPlayerHand.map(card => {
+//     if (selectedCards.some(selectedCard => selectedCard.id === card.id)) {
+//       return {
+//         ...card,
+//         ability: curse // コピーされたcurseアビリティ
+//       };
+//     }
+//     return card;
+//   });
 
-  // Firebase への更新内容を準備
-  const updates: Record<string, any> = {};
-  updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = currentPlayerHand;
+//   // Firebase への更新内容を準備
+//   const updates: Record<string, any> = {};
+//   updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = currentPlayerHand;
 
-  // Firebase に更新を反映
-  await update(ref(database), updates);
-};
+//   // Firebase に更新を反映
+//   await update(ref(database), updates);
+// };
 
 
 const unoAbility = async (roomId: string, currentPlayer: string) => {
@@ -534,6 +545,8 @@ const perfectAbility = async (
   // Firebase に更新を反映
   await update(ref(database), updates);
 };
+
+
 const refresh = async (
   roomId: string,
   currentPlayer: string
@@ -544,12 +557,19 @@ const refresh = async (
 
   if (!data) return;
 
+  // currentPlayer が存在するか確認
+  const playerData = data.players[currentPlayer];
+  if (!playerData || !playerData.hand) {
+    console.error("Player or hand data is undefined");
+    return; // プレイヤーが存在しない場合は処理を中断
+  }
+
   // 現在のプレイヤーの手札の枚数を取得
-  const handSize = data.players[currentPlayer].hand.length;
+  const handSize = playerData.hand.length;
 
   // 手札を捨て札に移動
-  const discardPile = [...data.discardPile, ...data.players[currentPlayer].hand];
-  data.players[currentPlayer].hand = []; // 手札を空にする
+  const discardPile = [...data.discardPile, ...playerData.hand];
+  playerData.hand = []; // 手札を空にする
   
   const updates: Record<string, any> = {};
   updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = [];
@@ -567,3 +587,44 @@ const refresh = async (
   // Firebase に更新を反映
   await update(ref(database), _updates);
 };
+
+
+const changeAbilityName = async (
+  roomId: string,
+  currentPlayer: string,
+  newAbilityName: string, // 新しいアビリティの名前
+  selectedCards: Card[]
+) => {
+  // Firebase からルームのデータを取得
+  const roomRef = ref(database, `rooms/${roomId}`);
+  const snapshot = await get(roomRef);
+  const data = snapshot.val();
+
+  if (!data) return;
+
+  // 現在のプレイヤーの手札を取得
+  let currentPlayerHand = data.players[currentPlayer]?.hand ? [...data.players[currentPlayer].hand] : [];
+
+  // 選択したカードのアビリティの名前を新しい名前に変更
+  currentPlayerHand = currentPlayerHand.map(card => {
+    if (selectedCards.some(selectedCard => selectedCard.id === card.id)) {
+      return {
+        ...card,
+        ability: {
+          ...card.ability,
+          name: newAbilityName // アビリティの名前を引数で指定した新しい名前に変更
+        }
+      };
+    }
+    return card;
+  });
+
+  // Firebase への更新内容を準備
+  const updates: Record<string, any> = {};
+  updates[`rooms/${roomId}/players/${currentPlayer}/hand`] = currentPlayerHand;
+
+  // Firebase に更新を反映
+  await update(ref(database), updates);
+};
+
+
