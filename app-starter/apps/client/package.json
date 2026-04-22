@@ -1,0 +1,41 @@
+{
+  "name": "@apps/client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "cf-typegen": "wrangler types",
+    "deploy": "yarn run build && wrangler deploy",
+    "dev": "react-router dev --port 5173 --strictPort",
+    "postinstall": "npm run cf-typegen",
+    "preview": "yarn run build && vite preview --port 4173 --strictPort",
+    "typecheck": "npm run cf-typegen && react-router typegen && tsc -b",
+    "lint": "npx biome check .",
+    "lint:fix": "npx biome check --write ."
+  },
+  "dependencies": {
+    "@packages/db": "workspace:*",
+    "@supabase/supabase-js": "^2.104.0",
+    "@types/papaparse": "^5.5.2",
+    "isbot": "^5.1.35",
+    "lucide-react": "^0.563.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router": "^7.13.0",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.25.0",
+    "@react-router/dev": "^7.13.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-tsconfig-paths": "^6.1.1",
+    "wrangler": "^4.65.0"
+  }
+}

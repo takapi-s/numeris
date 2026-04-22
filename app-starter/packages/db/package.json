@@ -1,0 +1,31 @@
+{
+  "name": "@packages/db",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "echo \"Use 'yarn sb:reset' (fresh) or 'yarn sb:apply' (incremental) for local Supabase. drizzle-kit migrate is not used with supabase migrations.\" && exit 1",
+    "sb:start": "supabase start",
+    "sb:stop": "supabase stop",
+    "sb:status": "supabase status",
+    "sb:reset": "supabase db reset",
+    "sb:apply": "supabase migration up",
+    "seed-numeris-abilities": "yarn tsx seeds/seed-numeris-abilities.ts",
+    "seed-master-data": "yarn tsx seeds/seed-industry-categories-and-industries.ts && yarn tsx seeds/seed-listing-types.ts && yarn tsx seeds/seed-position-levels.ts",
+    "seed-sample-tenants": "echo \"seed-sample-tenants is removed (tenants/users schema deleted)\" && exit 1",
+    "lint": "npx biome check .",
+    "lint:fix": "npx biome check --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.9",
+    "supabase": "2.76.8",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

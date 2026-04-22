@@ -1,0 +1,37 @@
+.card-content {
+  aspect-ratio: 1/1.586;
+  background-size: cover;
+  position: relative;
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.card-content .card-number {
+  position: absolute;
+  width: 40%;
+  object-fit: contain;
+  top: -3%;
+  left: -6%;
+}
+
+.card-content .card-image {
+  border: black;
+  position: absolute;
+  height: 92%;
+  top: 4%;
+  left: 7%;
+}
+
+.card-content.red {
+  background-image: url("/card_graphic/redcard.png");
+}
+
+.card-content.blue {
+  background-image: url("/card_graphic/bluecard.png");
+}
+
+.card-content.green {
+  background-image: url("/card_graphic/greencard.png");
+}
+

@@ -1,0 +1,33 @@
+{
+  "name": "app-starter",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach -Apt run build",
+    "dev": "yarn workspaces foreach -Ap --include '@apps/*' run dev",
+    "test": "yarn workspaces foreach -Apt run test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "typecheck": "yarn workspaces foreach -Apt run typecheck",
+    "knip": "knip",
+    "prepare": "lefthook install",
+    "env:decrypt-all": "make env-decrypt-all",
+    "env:encrypt-all": "make env-encrypt-all",
+    "db:encrypt-env": "npx dotenvx encrypt -fk .env.keys -f packages/db/.env --stdout > packages/db/.env.encrypt",
+    "db:seed-master-data": "npx dotenvx run -f packages/db/.env.encrypt -- yarn workspace @packages/db tsx seeds/seed-industry-categories-and-industries.ts && npx dotenvx run -f packages/db/.env.encrypt -- yarn workspace @packages/db tsx seeds/seed-listing-types.ts && npx dotenvx run -f packages/db/.env.encrypt -- yarn workspace @packages/db tsx seeds/seed-position-levels.ts",
+    "db:seed-sample-tenants": "npx dotenvx run -f packages/db/.env.encrypt -- yarn workspace @packages/db tsx seeds/seed-sample-tenants.ts",
+    "client:encrypt-env": "npx dotenvx encrypt -fk .env.keys -f apps/client/.env --stdout > apps/client/.env.encrypt",
+    "client:dev:dotenvx": "npx dotenvx run -f apps/client/.env.encrypt -- yarn workspace @apps/client dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@dotenvx/dotenvx": "^1.54.1",
+    "knip": "^6.3.1",
+    "lefthook": "^1.11.13"
+  }
+}

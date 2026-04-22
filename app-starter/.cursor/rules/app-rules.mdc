@@ -1,0 +1,219 @@
+---
+globs: apps/**
+alwaysApply: false
+---
+# App Directory Rules
+
+## 概要
+このプロジェクトはReact Router v7、Tailwind CSS v4、shadcn/uiを使用したモダンなWebアプリケーションです。
+
+## 技術スタック
+- **React Router v7**: ファイルベースルーティングとコロケーションパターン
+- **Tailwind CSS v4**: 最新のCSSフレームワーク
+- **shadcn/ui**: 再利用可能なUIコンポーネント
+- **TypeScript**: 型安全性
+- **Cloudflare Workers**: デプロイメント環境
+- **Drizzle ORM**: データベースアクセス
+
+## ディレクトリ構造
+
+### メインファイル
+- [root.tsx](mdc:packages/app/app/root.tsx): アプリケーションのルートレイアウト
+- [routes.ts](mdc:packages/app/app/routes.ts): ルート定義ファイル
+- [app.css](mdc:packages/app/app/app.css): グローバルスタイルとTailwind設定
+- [entry.server.tsx](mdc:packages/app/app/entry.server.tsx): サーバーサイドレンダリングエントリーポイント
+
+### ルーティング（コロケーションパターン）
+React Router v7の推奨パターンに従い、各ルートは独自のディレクトリを持ちます：
+
+```
+routes/
+├── styles/
+│   ├── route.tsx        # メインコンポーネント
+│   ├── loader.ts        # データ取得ロジック
+│   ├── action.ts        # フォーム処理ロジック
+│   └── components/      # このルート専用のコンポーネント
+│       ├── StyleTable.tsx
+│       └── StyleDesktopView.tsx
+├── styles.$style-id/
+│   ├── route.tsx
+│   ├── loader.ts
+│   ├── action.ts
+│   ├── actions/         # 複雑なactionを分割
+│   │   ├── file-actions.ts
+│   │   ├── folder-actions.ts
+│   │   └── message-actions.ts
+│   ├── components/
+│   │   └── StyleInfoPanel.tsx
+│   ├── utils/           # ルート専用のユーティリティ
+│   │   └── file-utils.ts
+│   └── chat/            # 関連機能をグループ化
+│       └── StyleChatPanel.tsx
+└── orders/
+    ├── route.tsx
+    └── components/
+        └── OrderFilterBar.tsx
+```
+
+### コンポーネント配置の原則
+- **ルート専用コンポーネント**: `routes/[route-name]/components/`に配置
+- **共通コンポーネント**: 複数のルートで使用される場合のみ`app/components/`に配置
+- **featureディレクトリは使用しない**: すべてのコンポーネントはルートごとに配置
+
+### 共通コンポーネント
+- [components/](mdc:packages/app/app/components): 複数ルートで共有されるコンポーネント
+  - [Header.tsx](mdc:packages/app/app/components/Header.tsx): ヘッダーコンポーネント
+  - [Sidebar.tsx](mdc:packages/app/app/components/Sidebar.tsx): サイドバーコンポーネント
+  - [common/](mdc:packages/app/app/components/common): 汎用コンポーネント
+    - PageHeader.tsx
+    - CompactFilterBar.tsx
+  - [ui/](mdc:packages/app/app/components/ui): shadcn/uiコンポーネント
+    - [button.tsx](mdc:packages/app/app/components/ui/button.tsx): ボタンコンポーネント
+
+### ユーティリティ
+- [lib/utils.ts](mdc:packages/app/app/lib/utils.ts): 共通ユーティリティ関数（cn関数など）
+- [lib/clerk-store.ts](mdc:packages/app/app/lib/clerk-store.ts): 認証関連のカスタムフック
+- [lib/use-device-detection.ts](mdc:packages/app/app/lib/use-device-detection.ts): デバイス検出フック
+
+## 開発ガイドライン
+
+### React Router v7のコロケーションパターン
+1. **ルート構造**
+   ```typescript
+   // routes/[route-name]/route.tsx
+   export { loader } from "./loader";
+   export { action } from "./action";
+   export default function RoutePage({ loaderData }: Route.ComponentProps) {
+     // コンポーネントロジック
+   }
+   ```
+
+2. **loader分離**
+   ```typescript
+   // routes/[route-name]/loader.ts
+   import type { LoaderFunctionArgs } from "react-router";
+   export async function loader({ request, context }: LoaderFunctionArgs) {
+     // データ取得ロジック
+   }
+   ```
+
+3. **action分離**
+   ```typescript
+   // routes/[route-name]/action.ts
+   import type { ActionFunctionArgs } from "react-router";
+   export async function action({ request, context }: ActionFunctionArgs) {
+     const formData = await request.formData();
+     const intent = formData.get("intent");
+     
+     // 複雑な場合はactions/に分割
+     switch (intent) {
+       case "create": return createAction(request, context);
+       case "update": return updateAction(request, context);
+     }
+   }
+   ```
+
+4. **型の自動生成**
+   - `yarn dev`実行時に`./+types/route`が自動生成される
+   - `import type { Route } from "./+types/route"`で型をインポート
+
+### ファイル命名規則
+- ルートファイル: `route.tsx`（routes.tsで指定）
+- ローダー: `loader.ts`
+- アクション: `action.ts`または`actions/`ディレクトリ
+- コンポーネント: PascalCaseで機能を表す名前
+
+### レスポンシブデザイン
+```typescript
+// useDeviceDetectionフックを使用
+const { isMobile, isTablet } = useDeviceDetection();
+
+// デバイスごとにコンポーネントを分割
+if (isMobile) return <MobileView />;
+if (isTablet) return <TabletView />;
+return <DesktopView />;
+```
+
+### Tailwind CSS v4
+- CSS変数を使用したテーマシステム
+- OKLCH色空間を使用
+- ダークモード対応
+- カスタムプロパティでデザインシステムを定義
+- レスポンシブクラス: `sm:`, `md:`, `lg:`, `xl:`
+
+### shadcn/ui
+- [components.json](mdc:packages/app/components.json)で設定管理
+- `@/`エイリアスを使用したインポート
+- Radix UIをベースとしたアクセシブルなコンポーネント
+- class-variance-authorityでバリアント管理
+
+### データベースアクセス
+```typescript
+// Drizzle ORMを使用
+import { db } from "@projects/db/client.server";
+import { styles, customers } from "@projects/db/schemas";
+
+const dbClient = db({ DATABASE_URL: context.cloudflare.env.DATABASE_URL });
+const data = await dbClient.query.styles.findMany({
+  with: { customer: true }
+});
+```
+
+### エラーハンドリング
+- loaderでエラーが発生した場合はデフォルト値を返す
+- actionでエラーが発生した場合は適切なエラーメッセージをthrow
+- ErrorBoundaryコンポーネントでエラーを捕捉
+
+### コンポーネント作成
+```tsx
+import { cn } from "@/lib/utils"
+
+// バリアント付きコンポーネント
+const componentVariants = cva(
+  "base-classes",
+  {
+    variants: {
+      variant: {
+        default: "default-classes",
+        // 他のバリアント
+      }
+    }
+  }
+)
+```
+
+### 型安全性
+- TypeScriptを活用した型定義
+- React Router v7の自動生成型を活用
+- コンポーネントのprops型を明示的に定義
+- データベーススキーマから型を生成
+
+## ベストプラクティス
+
+### コンポーネントの配置
+1. まず該当ルートの`components/`に配置を検討
+2. 2つ以上のルートで使用される場合のみ`app/components/`へ移動
+3. UIライブラリ（shadcn/ui）は常に`app/components/ui/`に配置
+
+### インポートパス
+- 相対パス: 同一ルート内のファイル（`./loader`）
+- エイリアス: 共通コンポーネント（`@/components/ui/button`）
+- 明示的なパス: 他ルートのコンポーネント（`../styles/components/StyleTable`）
+
+### パフォーマンス最適化
+- React.memoやuseMemoを適切に使用
+- 大きなコンポーネントは遅延ロード
+- データ取得はloaderで並列実行
+
+## 設定ファイル
+- [package.json](mdc:packages/app/package.json): 依存関係とスクリプト
+- [vite.config.ts](mdc:packages/app/vite.config.ts): Vite設定
+- [tsconfig.json](mdc:packages/app/tsconfig.json): TypeScript設定
+- [wrangler.jsonc](mdc:packages/app/wrangler.jsonc): Cloudflare Workers設定
+
+## 開発コマンド
+- `yarn dev`: 開発サーバー起動（型の自動生成含む）
+- `yarn build`: プロダクションビルド
+- `yarn deploy`: Cloudflare Workersにデプロイ
+- `yarn typecheck`: 型チェック
+- `yarn preview`: ビルド結果のプレビュー

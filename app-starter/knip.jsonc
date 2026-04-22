@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "workspaces": {
+    "packages/db": {
+      "drizzle": false,
+      "entry": ["auth.generate.ts", "lib/**/*.ts", "schemas/**/*.ts"],
+      "ignoreFiles": ["drizzle.config.ts"]
+    }
+  }
+}

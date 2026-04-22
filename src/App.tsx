@@ -3,14 +3,15 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import Room from './pages/Room';
 import Game from './pages/Game';
+import { routes } from './routes';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/numeris" element={<Home />} />
-        <Route path="/numeris/rooms/:roomID" element={<Room />} />
-        <Route path="/numeris/game/:roomID" element={<Game />} /> 
+        <Route path={routes.home()} element={<Home />} />
+        <Route path={`${routes.home()}/rooms/:roomID`} element={<Room />} />
+        <Route path={`${routes.home()}/game/:roomID`} element={<Game />} />
       </Routes>
     </Router>
   );

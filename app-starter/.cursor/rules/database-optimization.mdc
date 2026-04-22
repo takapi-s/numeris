@@ -1,0 +1,83 @@
+---
+globs: apps/**
+alwaysApply: false
+---
+# データベース最適化ルール
+
+## Cloudflare Workers + Supabase環境での重要な原則
+
+### 🚨 接続タイムアウト対策
+- **Promise.allは最小限に**: 複数のクエリを並列実行するとタイムアウトリスクが増加
+- **単一クエリを優先**: Drizzle ORMの`with`句を最大限活用して関連データを一括取得
+- **メモリ内計算**: 取得したデータから必要な集計値を計算（追加クエリを避ける）
+
+### ✅ 推奨パターン
+
+#### 単一クエリでの関連データ取得
+```typescript
+// ✅ GOOD: 一つのクエリで関連データをすべて取得
+const style = await dbClient.query.styles.findFirst({
+  where: eq(styles.id, styleId),
+  with: {
+    customer: true,
+    organization: {
+      with: {
+        styleProcessMaster: true,
+        suppliers: true,
+        userOrganizations: { with: { user: true } },
+      },
+    },
+    styleProcesses: { with: { supplier: true } },
+    messages: { with: { user: true } },
+  },
+});
+```
+
+#### メモリ内での集計計算
+```typescript
+// ✅ GOOD: 取得したデータから計算
+const processMessageCounts: Record<string, number> = {};
+style.messages?.forEach((message) => {
+  if (message.styleProcessId) {
+    processMessageCounts[message.styleProcessId] = 
+      (processMessageCounts[message.styleProcessId] || 0) + 1;
+  }
+});
+```
+
+### ❌ 避けるべきパターン
+
+#### 複数のPromise.all
+```typescript
+// ❌ BAD: タイムアウトリスクが高い
+const [style, users, processes, messages] = await Promise.all([
+  getStyle(),
+  getUsers(),
+  getProcesses(),
+  getMessages(),
+]);
+```
+
+#### 個別のカウントクエリ
+```typescript
+// ❌ BAD: 各ファイルごとに個別クエリ
+const messageCount = await dbClient
+  .select({ count: count() })
+  .from(styleMessages)
+  .where(eq(styleMessages.styleFileId, file.id));
+```
+
+### 🎯 パフォーマンス指標
+- **目標**: データベースクエリ数を3回以下に抑制
+- **メインクエリ**: 1回（関連データすべて含む）
+- **補助クエリ**: 最大2回（サイドバー用データなど）
+
+### 📱 レスポンシブ対応
+- **デスクトップ**: 3カラム（サイドバー + 商品情報 + チャット）
+- **タブレット**: 2カラム（商品情報 + チャット）
+- **モバイル**: 1カラム（スワイプ式チャット）
+
+### 🛠️ エラーハンドリング
+- 接続エラー時は具体的なエラーメッセージを表示
+- タイムアウトエラーの場合はリトライ機能を提供
+- ユーザーに分かりやすいフィードバックを表示

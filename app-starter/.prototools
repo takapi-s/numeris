@@ -1,0 +1,5 @@
+node = "22.16.0"
+yarn = "4.9.1"
+
+[settings]
+auto-install = true
