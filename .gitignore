@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+/legacy/node_modules
+/modern/node_modules
+/modern/.yarn-cache
 /.pnp
 .pnp.js
 
@@ -9,15 +11,18 @@
 /coverage
 
 # production
-/build
+/legacy/build
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
+/legacy/.env.local
+/legacy/.env.development.local
+/legacy/.env.test.local
+/legacy/.env.production.local
+/legacy/.env
+/modern/.wrangler
+/modern/.yarn/unplugged
+/modern/.yarn/install-state.gz
 
 npm-debug.log*
 yarn-debug.log*

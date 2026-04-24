@@ -1,12 +1,12 @@
 import { db } from "@packages/db/client.server";
 import {
   cardTemplates,
-  deckTemplateAbilities,
-  deckTemplateCards,
-  deckTemplates,
   gameEvents,
   games,
   players,
+  playerDeckAbilities,
+  playerDeckCards,
+  playerDecks,
   roomPlayers,
   rooms,
 } from "@packages/db/schemas";
@@ -46,12 +46,13 @@ export class GameService {
   async startGame(roomPublicId: string): Promise<GameState> {
     return this.dbClient.transaction(async (tx) => {
       const roomRows = await tx
-        .select({ id: rooms.id })
+        .select({ id: rooms.id, selectedDeckId: rooms.selectedDeckId })
         .from(rooms)
         .where(eq(rooms.publicId, roomPublicId))
         .limit(1);
       const room = roomRows[0];
       if (!room) throw new Response("Room not found", { status: 404 });
+      if (!room.selectedDeckId) throw new Response("Selected deck not found", { status: 400 });
 
       const roomPlayerRows = await tx
         .select({ playerId: roomPlayers.playerId, displayName: players.displayName })
@@ -71,24 +72,24 @@ export class GameService {
         traitEffects: (r.traitEffects as any) ?? null,
       }));
 
-      const deckTemplateRows = await tx
-        .select({ id: deckTemplates.id })
-        .from(deckTemplates)
-        .where(eq(deckTemplates.slug, "normal"))
+      const selectedDeckRows = await tx
+        .select({ id: playerDecks.id })
+        .from(playerDecks)
+        .where(eq(playerDecks.id, room.selectedDeckId))
         .limit(1);
-      const deckTemplate = deckTemplateRows[0];
-      if (!deckTemplate) throw new Response("Deck template not found: normal", { status: 500 });
+      const selectedDeck = selectedDeckRows[0];
+      if (!selectedDeck) throw new Response("Player deck not found", { status: 404 });
 
       const deckCardRows = await tx
         .select({
-          cardTemplateId: deckTemplateCards.cardTemplateId,
-          count: deckTemplateCards.count,
+          cardTemplateId: playerDeckCards.cardTemplateId,
+          count: playerDeckCards.count,
           color: cardTemplates.color,
           number: cardTemplates.number,
         })
-        .from(deckTemplateCards)
-        .innerJoin(cardTemplates, eq(cardTemplates.id, deckTemplateCards.cardTemplateId))
-        .where(eq(deckTemplateCards.deckTemplateId, deckTemplate.id));
+        .from(playerDeckCards)
+        .innerJoin(cardTemplates, eq(cardTemplates.id, playerDeckCards.cardTemplateId))
+        .where(eq(playerDeckCards.playerDeckId, selectedDeck.id));
 
       let seq = 0;
       const deck: GameCard[] = [];
@@ -99,9 +100,9 @@ export class GameService {
       }
 
       const abilityCountRows = await tx
-        .select({ abilityName: deckTemplateAbilities.abilityName, count: deckTemplateAbilities.count })
-        .from(deckTemplateAbilities)
-        .where(eq(deckTemplateAbilities.deckTemplateId, deckTemplate.id));
+        .select({ abilityName: playerDeckAbilities.abilityName, count: playerDeckAbilities.count })
+        .from(playerDeckAbilities)
+        .where(eq(playerDeckAbilities.playerDeckId, selectedDeck.id));
 
       const abilityPool: string[] = [];
       for (const a of abilityCountRows) {
@@ -111,6 +112,7 @@ export class GameService {
       shuffle(deck);
       assignAbilities(deck, abilityPool);
       const state = makeInitialState({ players: roomPlayerRows, deck });
+      await tx.update(rooms).set({ status: "in_game" }).where(eq(rooms.id, room.id));
       const game = await tx.insert(games).values({ roomId: room.id, state }).returning({ id: games.id });
 
       await tx.insert(gameEvents).values({ roomId: room.id, gameId: game[0]!.id, type: "game_started", payload: {} });

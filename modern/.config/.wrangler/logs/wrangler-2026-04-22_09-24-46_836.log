@@ -1,0 +1,20 @@
+
+--- 2026-04-22T09:24:47.004Z debug
+🪵  Writing logs to "/home/pocky/takaoka/numeris/modern/.config/.wrangler/logs/wrangler-2026-04-22_09-24-46_836.log"
+---
+
+--- 2026-04-22T09:24:47.004Z log
+Proxy environment variables detected. We'll use your proxy for fetch requests.
+---
+
+--- 2026-04-22T09:24:47.611Z debug
+local dev variables file not found at ".dev.vars". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-04-22T09:24:47.612Z log
+Using vars defined in .env
+---
+
+--- 2026-04-22T09:24:47.612Z debug
+.env file not found at "/home/pocky/takaoka/numeris/modern/apps/client/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---

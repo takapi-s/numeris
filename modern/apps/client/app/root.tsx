@@ -10,7 +10,6 @@ import { ToastContainer } from "./components/Toast";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import "./styles/numeris-legacy.css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

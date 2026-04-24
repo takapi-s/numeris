@@ -4,8 +4,8 @@ import { RoomRepository } from "./repositories/RoomRepository";
 export class RoomService {
   constructor(private readonly rooms: RoomRepository) {}
 
-  async createRoom(ownerPlayerId: string) {
-    const created = await this.rooms.createRoom(ownerPlayerId);
+  async createRoom(ownerPlayerId: string, selectedDeckId: string) {
+    const created = await this.rooms.createRoom(ownerPlayerId, selectedDeckId);
     if (!created) throw new Response("Failed to create room", { status: 500 });
     await this.rooms.joinRoom(created.id, ownerPlayerId, true);
     return created;

@@ -46,7 +46,7 @@ function inferCanPlayRule(name: string): AbilityCanPlayRule | null {
 }
 
 async function main() {
-  const csvPath = path.resolve(__dirname, "../../../apps/client/public/decks/NormalDeck.csv");
+  const csvPath = path.resolve(__dirname, "./data/NormalDeck.csv");
   const raw = await readFile(csvPath, "utf8");
   const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
   const header = lines.shift();

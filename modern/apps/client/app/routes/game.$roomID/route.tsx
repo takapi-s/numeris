@@ -8,6 +8,10 @@ import { PlayerService } from "../../domain/PlayerService";
 import { PlayerRepository } from "../../domain/repositories/PlayerRepository";
 import { db } from "@packages/db/client.server";
 import type { Route } from "./+types/route";
+import { Badge } from "../../components/ui/Badge";
+import { Button } from "../../components/ui/Button";
+import { Card, CardContent, CardHeader } from "../../components/ui/Card";
+import { PageShell } from "../../components/ui/PageShell";
 
 export const meta: Route.MetaFunction = () => [{ title: "Game" }];
 
@@ -127,80 +131,146 @@ export default function GameRoute({ loaderData }: Route.ComponentProps) {
   }, [room.id, refreshEvents]);
 
   return (
-    <div className="p-4 space-y-4">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Game</h1>
-        <Link className="text-sm underline" to={href("/rooms/:roomID", { roomID: room.publicId })}>
-          Roomへ戻る
-        </Link>
+    <PageShell>
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-zinc-300">Game</p>
+          <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
+            Room #{room.publicId}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to={href("/rooms/:roomID", { roomID: room.publicId })}>
+            <Button variant="secondary" size="sm" type="button">
+              Room
+            </Button>
+          </Link>
+          <Link to={href("/")}>
+            <Button variant="ghost" size="sm" type="button">
+              Home
+            </Button>
+          </Link>
+        </div>
       </header>
 
-      <div className="space-y-2">
-        <p className="text-sm text-gray-600">roomID: {room.publicId}</p>
-        <p className="text-sm text-gray-600">
-          player: {me.displayName} ({me.playerId})
-        </p>
-      </div>
+      <section className="mt-6 grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-100">My Hand</h2>
+              <p className="mt-1 text-sm text-zinc-300">
+                {me.displayName} <span className="text-zinc-500">({me.playerId})</span>
+              </p>
+            </div>
+            <Badge tone={game ? "info" : "warning"}>{game ? "進行中" : "未開始"}</Badge>
+          </CardHeader>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Actions</h2>
-        <div className="flex gap-2 flex-wrap">
-          <Form method="post">
-            <input type="hidden" name="intent" value="start" />
-            <button className="px-3 py-1 rounded bg-black text-white text-sm" type="submit">
-              Start（未開始なら）
-            </button>
-          </Form>
-          <Form method="post">
-            <input type="hidden" name="intent" value="draw" />
-            <button className="px-3 py-1 rounded bg-gray-200 text-sm" type="submit">
-              Draw
-            </button>
-          </Form>
-          <Form method="post">
-            <input type="hidden" name="intent" value="pass" />
-            <button className="px-3 py-1 rounded bg-gray-200 text-sm" type="submit">
-              Pass
-            </button>
-          </Form>
-        </div>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">My Hand</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {myHand.map((c) => (
-            <Form key={c.id} method="post" className="p-2 rounded border bg-white space-y-1">
-              <div className="text-sm font-medium">
-                {c.color} {c.number}
+          <CardContent>
+            {myHand.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/15 bg-black/20 p-6 text-center">
+                <p className="text-sm font-medium text-zinc-200">手札がありません</p>
+                <p className="mt-1 text-sm text-zinc-400">Draw でカードを引いてください。</p>
               </div>
-              <div className="text-xs text-gray-600">{c.abilityName ?? "-"}</div>
-              <input type="hidden" name="intent" value="play" />
-              <input type="hidden" name="cardId" value={c.id} />
-              <button className="px-2 py-1 rounded bg-blue-600 text-white text-xs" type="submit">
-                Play
-              </button>
-            </Form>
-          ))}
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {myHand.map((c) => (
+                  <Form
+                    key={c.id}
+                    method="post"
+                    className="rounded-2xl bg-black/30 p-4 ring-1 ring-white/10"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-zinc-100">
+                          {c.color} {c.number}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-zinc-400">{c.abilityName ?? "-"}</p>
+                      </div>
+                      <Badge tone="neutral" className="shrink-0">
+                        #{String(c.id).slice(0, 4)}
+                      </Badge>
+                    </div>
+                    <input type="hidden" name="intent" value="play" />
+                    <input type="hidden" name="cardId" value={c.id} />
+                    <div className="mt-3">
+                      <Button variant="secondary" size="sm" className="w-full" type="submit">
+                        Play
+                      </Button>
+                    </div>
+                  </Form>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <h2 className="text-sm font-semibold text-zinc-100">Actions</h2>
+              <p className="mt-1 text-sm text-zinc-300">ゲーム操作</p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Form method="post" className="contents">
+                <input type="hidden" name="intent" value="start" />
+                <Button variant="primary" className="w-full" type="submit">
+                  Start（未開始なら）
+                </Button>
+              </Form>
+              <Form method="post" className="contents">
+                <input type="hidden" name="intent" value="draw" />
+                <Button variant="secondary" className="w-full" type="submit">
+                  Draw
+                </Button>
+              </Form>
+              <Form method="post" className="contents">
+                <input type="hidden" name="intent" value="pass" />
+                <Button variant="ghost" className="w-full" type="submit">
+                  Pass
+                </Button>
+              </Form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-100">Events</h2>
+                <p className="mt-1 text-sm text-zinc-300">Realtime（直近20件）</p>
+              </div>
+              <Badge tone="neutral">{realtimeEvents.length}</Badge>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                {realtimeEvents.map((e, idx) => (
+                  <li
+                    key={`${e.createdAt}-${idx}`}
+                    className="rounded-xl bg-black/30 p-3 ring-1 ring-white/10"
+                  >
+                    <p className="text-xs text-zinc-400">{e.createdAt}</p>
+                    <p className="mt-1 font-semibold text-zinc-100">{e.type}</p>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">State（暫定）</h2>
-        <pre className="p-3 bg-gray-50 rounded text-xs overflow-x-auto">{JSON.stringify(game?.state ?? {}, null, 2)}</pre>
+      <section className="mt-4">
+        <Card>
+          <CardHeader>
+            <h2 className="text-sm font-semibold text-zinc-100">State（暫定）</h2>
+            <p className="mt-1 text-sm text-zinc-300">デバッグ表示</p>
+          </CardHeader>
+          <CardContent>
+            <pre className="overflow-x-auto rounded-xl bg-black/40 p-4 text-xs text-zinc-200 ring-1 ring-white/10">
+              {JSON.stringify(game?.state ?? {}, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
       </section>
-
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Events（Realtime）</h2>
-        <ul className="text-sm space-y-1">
-          {realtimeEvents.map((e, idx) => (
-            <li key={`${e.createdAt}-${idx}`} className="text-gray-700">
-              {e.createdAt} - {e.type}
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+    </PageShell>
   );
 }
 

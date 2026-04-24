@@ -1,0 +1,16 @@
+
+--- 2026-04-22T09:52:09.724Z debug
+🪵  Writing logs to "/home/pocky/takaoka/numeris/modern/.config/.wrangler/logs/wrangler-2026-04-22_09-52-08_549.log"
+---
+
+--- 2026-04-22T09:52:09.724Z debug
+local dev variables file not found at ".dev.vars". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-04-22T09:52:09.725Z log
+Using vars defined in .env
+---
+
+--- 2026-04-22T09:52:09.727Z debug
+.env file not found at "/home/pocky/takaoka/numeris/modern/apps/client/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---

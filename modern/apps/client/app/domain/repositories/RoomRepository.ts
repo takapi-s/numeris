@@ -11,7 +11,13 @@ export class RoomRepository {
 
   async listRooms(limit = 50) {
     return this.db
-      .select({ id: rooms.id, publicId: rooms.publicId, status: rooms.status, createdAt: rooms.createdAt })
+      .select({
+        id: rooms.id,
+        publicId: rooms.publicId,
+        status: rooms.status,
+        createdAt: rooms.createdAt,
+        selectedDeckId: rooms.selectedDeckId,
+      })
       .from(rooms)
       .orderBy(desc(rooms.createdAt))
       .limit(limit);
@@ -19,23 +25,33 @@ export class RoomRepository {
 
   async getRoomByPublicId(publicId: string) {
     const rows = await this.db
-      .select({ id: rooms.id, publicId: rooms.publicId, status: rooms.status, ownerPlayerId: rooms.ownerPlayerId })
+      .select({
+        id: rooms.id,
+        publicId: rooms.publicId,
+        status: rooms.status,
+        ownerPlayerId: rooms.ownerPlayerId,
+        selectedDeckId: rooms.selectedDeckId,
+      })
       .from(rooms)
       .where(eq(rooms.publicId, publicId))
       .limit(1);
     return rows[0] ?? null;
   }
 
-  async createRoom(ownerPlayerId: string) {
+  async createRoom(ownerPlayerId: string, selectedDeckId: string) {
     const created = await this.db
       .insert(rooms)
-      .values({ ownerPlayerId, status: "waiting" })
-      .returning({ id: rooms.id, publicId: rooms.publicId });
+      .values({ ownerPlayerId, status: "waiting", selectedDeckId })
+      .returning({ id: rooms.id, publicId: rooms.publicId, selectedDeckId: rooms.selectedDeckId });
     return created[0] ?? null;
   }
 
   async setStatus(roomId: number, status: "waiting" | "in_game" | "finished") {
     await this.db.update(rooms).set({ status }).where(eq(rooms.id, roomId));
+  }
+
+  async setSelectedDeckId(roomId: number, selectedDeckId: string) {
+    await this.db.update(rooms).set({ selectedDeckId }).where(eq(rooms.id, roomId));
   }
 
   async deleteRoomById(roomId: number) {
